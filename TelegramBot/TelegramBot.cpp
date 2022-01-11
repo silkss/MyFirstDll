@@ -5,7 +5,7 @@
 #pragma warning(disable: 4996)
 
 SOCKET connection;
-SOCKADDR_IN addr
+SOCKADDR_IN addr;
 
 int initWsa()
 {
@@ -29,32 +29,43 @@ void createAddr(const char* ip, u_short port)
 
 int connect()
 {
+	if (initWsa() != 0) return -1;
+
+	createAddr("127.0.0.1", 1234);
+
+	connection = socket(AF_INET, SOCK_STREAM, NULL);
+
 	if (connect(connection, (SOCKADDR*)&addr, sizeof(addr)) != 0)
 	{
-		return -2;
+		return WSAGetLastError();
 	}
+
 	return 0;
 }
 
 void disconnect()
 {
-	shutdown(connection, SD_SEND);
+	shutdown(connection, SD_BOTH);
+	closesocket(connection);
 }
 
 void sendMsg(const char* msg)
 {
-	send(connection, msg, sizeof(msg), NULL);
+	send(connection, msg, (int)strlen(msg), NULL);
 }
 
 int main(int arc, char* argv[])
-{
-	if (initWsa() != 0) return -1;
-	addr = createAddr("127.0.0.1", 1234);
-	connection = socket(AF_INET, SOCK_STREAM, NULL);
-
-	if (connect() != 0) return -2;
+{	
+	int err = connect();
+	if (err != 0)
+	{
+		std::cout << "Error while connecting\n" << err << std::endl;
+		return -2;
+	}
 
 	sendMsg("Hello");
+
+	system("pause");
 
 	disconnect();
 	

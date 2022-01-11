@@ -1,8 +1,4 @@
 #pragma once
-#define DLLEXPORT __declspec(dllexport)
-
-#include <string>
-#include <iostream>
-#include <fstream>
-
-extern "C" __declspec(dllexport) int ReturnSomething(const char* c_str);
+extern "C" __declspec(dllexport) int connect_to_socket();
+extern "C" __declspec(dllexport) void disconnect();
+extern "C" __declspec(dllexport) int sendMsg(const char* msg);
