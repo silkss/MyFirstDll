@@ -1,20 +1,26 @@
-﻿using Telegram.Bot;
+﻿using ConsoleUI.Models;
+using ConsoleUI.Services;
+using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace CsTelegramBot
+namespace ConsoleUI
 {
     public class TelegramImpl
     {
-
         public const string TOKEN = "2031108528:AAE9qpNIRCbpF23IufRJTO-0D2h7IyIf0gg";
         public User? Me { get; set; }
 
         private CancellationTokenSource cts = new CancellationTokenSource();
-
         private TelegramBotClient client = new TelegramBotClient(TOKEN);
+        private ReceiversRepository _Repository;
+
+        public TelegramImpl(ReceiversRepository repository)
+        {
+            _Repository = repository;
+        }
 
         public async Task<User> BotUser()
         {
@@ -61,7 +67,16 @@ namespace CsTelegramBot
 
             if (messageText == "/start")
             {
-                answer = "Today this service is free, but in future..";
+                if (_Repository.Find(chatId) is Receiver)
+                {
+                    answer = "Glad you back!";
+                }
+                else
+                {
+                    _Repository.Add(new Receiver { Id = chatId, Added = DateTime.Now });
+                    answer = "Today this service is free, but in future..";
+                }
+                
             }
             else
             {

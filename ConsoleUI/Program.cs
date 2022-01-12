@@ -1,12 +1,11 @@
-﻿using CsTelegramBot;
-
+﻿
 namespace ConsoleUI
 { 
     public class Program
     {
         public static async Task Main(string[] args)
         {
-            var client = new TelegramImpl();
+            var client = new TelegramImpl(new Services.ReceiversRepository());
             await client.BotUser();   
             if (client.Me != null)
             {
