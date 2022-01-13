@@ -48,6 +48,7 @@ namespace ConsoleUI
             return true;
         }
 
+        #region Update Handlers
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             // Only process Message updates: https://core.telegram.org/bots/api#message
@@ -76,18 +77,12 @@ namespace ConsoleUI
                     _Repository.Add(new Receiver { Id = chatId, Added = DateTime.Now });
                     answer = "Today this service is free, but in future..";
                 }
-                
-            }
-            else
-            {
-                answer = messageText == null ? "in some reason no message here" : messageText;
-            }
 
-            // Echo received message text
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: answer,
-                cancellationToken: cancellationToken);
+                Message sentMessage = await botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: answer,
+                    cancellationToken: cancellationToken);
+            }
         }
 
         private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -101,6 +96,21 @@ namespace ConsoleUI
 
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
+        }
+        #endregion
+
+        public async Task SendMessage(string message)
+        {
+            if (_Repository.GetAll() is List<Receiver> recivers)
+            {
+                foreach (var reciver in recivers)
+                {
+                    Message sentMessage = await client.SendTextMessageAsync(
+                        chatId: reciver.Id,
+                        text: message,
+                        cancellationToken: cts.Token);
+                }
+            }
         }
     }
 }
