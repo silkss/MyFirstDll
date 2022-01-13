@@ -24,11 +24,11 @@ namespace ConsoleUI
         private static async Task<bool> commands(string? command) => command switch
         {
             "disconnect" => false,
-            "message" => await sendmessage(),
+            "message" => await Sendmessage(),
             _ => true
         };
 
-        private static async Task<bool> sendmessage()
+        private static async Task<bool> Sendmessage()
         {
             Console.WriteLine("Enter message");
             var message = Console.ReadLine();
