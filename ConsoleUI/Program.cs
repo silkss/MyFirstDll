@@ -6,7 +6,7 @@ namespace ConsoleUI
         private static TelegramImpl client = new TelegramImpl(new Services.ReceiversRepository());
         public static async Task Main(string[] args)
         {
-            await client.BotUser();   
+            _ = await client.BotUser();
             if (client.Me != null)
             {
                 Console.WriteLine(client.Me.Id);

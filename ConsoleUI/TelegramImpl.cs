@@ -45,6 +45,7 @@ namespace ConsoleUI
                 HandleErrorAsync,
                 receiverOptions,
                 cancellationToken: cts.Token);
+
             return true;
         }
 
