@@ -21,27 +21,28 @@ namespace MyTCPServer
                 var hello = Encoding.Default.GetBytes("hello world\n");
                 ns.Write(hello, 0, hello.Length);
 
-                Task.Run(() =>
-                {
-                    while (client.Connected)
-                    {
-                        byte[] msg = new byte[1024];
-                        try
-                        {
-                            int count = ns.Read(msg, 0, msg.Length);
-                            if (count != 0)
-                            {
-                                Console.WriteLine(Encoding.Default.GetString(msg, 0, count));
-                                Console.WriteLine(new String('-', 10));
-                            }
-                        }
-                        catch (System.IO.IOException e)
-                        {
-                            Console.WriteLine($"Client disconnected {e.Message}");
-                            break;
-                        }
-                    }
-                });
+                /* запускаем подключение асинхронно, чтобы не блокировать поток */
+                _ = Task.Run(() =>
+                  {
+                      while (client.Connected)
+                      {
+                          byte[] msg = new byte[1024];
+                          try
+                          {
+                              int count = ns.Read(msg, 0, msg.Length);
+                              if (count != 0)
+                              {
+                                  Console.WriteLine(Encoding.Default.GetString(msg, 0, count));
+                                  Console.WriteLine(new String('-', 10));
+                              }
+                          }
+                          catch (System.IO.IOException e)
+                          {
+                              Console.WriteLine($"Client disconnected {e.Message}");
+                              break;
+                          }
+                      }
+                  });
             }
             server.Stop();
         }
