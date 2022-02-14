@@ -1,6 +1,5 @@
 ﻿namespace TCPGotm.TradableUnits;
 
-    internal class MainStrategy
-    {
-    }
+internal class MainStrategy
+{
 }

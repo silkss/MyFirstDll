@@ -1,25 +1,23 @@
-﻿using Connectors.IB;
-using Connectors.Interfaces;
+﻿using Connectors.Interfaces;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using TCPGotm.enums;
+using TCPGotm.Infrastructure;
 
 namespace TCPGotm;
 
 internal class TcpServer
 {
     private readonly TcpListener _Server;
-    private readonly IConnector _Connector;
+    private readonly FabricOfTraders _FabricOfTraders;
     private readonly ILogger _Logger;
-    private readonly Trader _Trader;
          
     private bool working = false;
 
-    public TcpServer(IConnector connector, ILogger logger)
+    public TcpServer(FabricOfTraders fabric, ILogger logger)
     {
         _Logger = logger;
-        _Connector = connector;
+        _FabricOfTraders = fabric;
         _Server = new TcpListener(System.Net.IPAddress.Any, 1488);
     }
 
@@ -46,7 +44,7 @@ internal class TcpServer
 
             _ = Task.Run(() =>
             {
-                Trader trader = new Trader(_Connector);
+                Trader trader = _FabricOfTraders.CreateTrader();
                 while (client.Connected)
                 {
                     byte[] msg = new byte[1024];
@@ -69,7 +67,6 @@ internal class TcpServer
                     }
                 }
             });
-
         }
     }
 }

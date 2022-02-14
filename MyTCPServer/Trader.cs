@@ -1,17 +1,23 @@
 ﻿using Connectors.Instruments;
 using Connectors.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TCPGotm.enums;
+using TCPGotm.TradeLogic;
 
 namespace TCPGotm;
 
 internal class Trader
 {
+    private readonly TimeSpan _Period = new TimeSpan(days: 9,hours: 0,minutes: 0, seconds: 0);
     private readonly IConnector _Connector;
     private readonly ILogger _Logger;
 
-    private int reqUnderlyinId = 0;
-    private Future? _Underlying;
+    private readonly List<LongStraddle> Straddlers = new();
+
+    public int reqUnderlyinId { get; set; } = 0;
+    public Future? _Underlying { get; set; }
 
     public bool Inited { get; private set; } = false;
 
@@ -35,6 +41,7 @@ internal class Trader
     {
         reqUnderlyinId = _Connector.RequestFuture(underlying);
     }
+
     public void Trade(string underlying, decimal price, SignalType type)
     {
         switch (type)
@@ -49,7 +56,18 @@ internal class Trader
                     if (_Underlying == null) throw new NullReferenceException();
                     price = _Underlying.LastPrice;
 #endif
-                    nearestStrike(price);
+                    var optioncChain = _Underlying.OptionChain
+                        .OrderByDescending(oc => oc.ExpirationDate).Reverse()
+                        .First();
+
+                    var strike = optioncChain.Strikes
+                        .OrderByDescending(s => s)
+                        .First(s => (decimal)s < price);
+
+                    if (Straddlers.Count() == 0)
+                    {
+                        Straddlers.Add(new LongStraddle(_Connector, _Underlying, strike, optioncChain.ExpirationDate));
+                    }
                 }
                 catch (NullReferenceException)
                 {
@@ -68,7 +86,6 @@ internal class Trader
 
     private double nearestStrike(decimal price)
     {
-        if (_Underlying == null)
-            throw new NullReferenceException();
+        return default(double);
     }
 }
