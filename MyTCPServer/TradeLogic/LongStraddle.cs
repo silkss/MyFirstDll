@@ -1,9 +1,10 @@
 ﻿using Connectors.Enums;
-using Connectors.Instruments;
+using Connectors.Models.Instruments;
 using Connectors.Interfaces;
-using Connectors.Models;
+using Connectors.Models.Strategies;
 
 using System;
+
 using TCPGotm.TradableUnits.Logic;
 
 namespace TCPGotm.TradeLogic;
@@ -43,16 +44,13 @@ internal class LongStraddle
     {
         switch (ticktype)
         {
-            case TickType.Bid:
+            case TickType.LastPrice when LogicType == LogicType.OpenPosition:
                 break;
-            case TickType.Ask:
+            case TickType.LastPrice when LogicType == LogicType.ClosePosition:
                 break;
-            case TickType.LastPrice:
-                break;
-            case TickType.TheorPrice:
-                break;
-            default:
-                throw new ArgumentException("Wrong ticktype!", ticktype);
+
+            default: break;
         }
     }
+
 }

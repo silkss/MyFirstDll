@@ -1,4 +1,4 @@
-﻿using Connectors.Instruments;
+﻿using Connectors.Models.Instruments;
 using Connectors.Interfaces;
 using System;
 using System.Collections.Generic;
