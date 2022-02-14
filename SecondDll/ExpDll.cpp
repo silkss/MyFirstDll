@@ -33,7 +33,7 @@ extern "C" __declspec(dllexport) int connect_to_socket()
 {
 	if (initWsa() != 0) return -1;
 
-	createAddr("127.0.0.1", 1234);
+	createAddr("127.0.0.1", 1488);
 
 	connection = socket(AF_INET, SOCK_STREAM, NULL);
 

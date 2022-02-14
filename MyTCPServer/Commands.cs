@@ -1,4 +1,4 @@
-﻿namespace MyTCPServer
+﻿namespace TCPGotm
 {
     internal class Commands
     {
