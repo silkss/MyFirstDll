@@ -1,6 +1,5 @@
 ﻿using Connectors.Enums;
 using Connectors.Models.Instruments;
-using Connectors.Models.Strategies;
 using Connectors.Orders;
 
 namespace Connectors.Interfaces;

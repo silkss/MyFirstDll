@@ -1,11 +1,11 @@
 ﻿using Connectors.Enums;
 using Connectors.Models.Instruments;
 using Connectors.Interfaces;
-using Connectors.Models.Strategies;
 
 using System;
 
 using TCPGotm.TradableUnits.Logic;
+using DataLayer.Models.Strategies;
 
 namespace TCPGotm.TradeLogic;
 
@@ -34,11 +34,11 @@ internal class LongStraddle
 
     private void onOptionAdded(int reqId, Option option)
     {
-        if (reqId == _putOptionreqid)
-            PutOptionStrategy = new OptionStrategy { Instrument = option, InstrumentId = option.Id, Direction = Direction.Buy };
+        //if (reqId == _putOptionreqid)
+        //    PutOptionStrategy = new OptionStrategy { Instrument = option, InstrumentId = option.Id, Direction = Direction.Buy };
 
-        if(reqId == _callOptionreqid)
-            CallOptionStrategy = new OptionStrategy { Instrument = option, InstrumentId = option.Id, Direction = Direction.Buy };
+        //if (reqId == _callOptionreqid)
+        //    CallOptionStrategy = new OptionStrategy { Instrument = option, InstrumentId = option.Id, Direction = Direction.Buy };
     }
     private void onIstrumentChanged(TickType ticktype)
     {
@@ -46,10 +46,10 @@ internal class LongStraddle
         {
             case TickType.LastPrice when LogicType == LogicType.OpenPosition:
                 if (CallOptionStrategy == null) break;
-                CallOptionStrategy.OpenPosition(_Connector);
+                //CallOptionStrategy.OpenPosition(_Connector);
 
                 if (PutOptionStrategy == null) break;
-                PutOptionStrategy.OpenPosition(_Connector);
+                //PutOptionStrategy.OpenPosition(_Connector);
                 break;
             case TickType.LastPrice when LogicType == LogicType.ClosePosition:
                 break;

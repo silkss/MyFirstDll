@@ -6,7 +6,6 @@ using Connectors.Interfaces;
 using Connectors.Orders;
 using IBApi;
 using System.Globalization;
-using Connectors.Models.Strategies;
 
 namespace Connectors.IB
 {
