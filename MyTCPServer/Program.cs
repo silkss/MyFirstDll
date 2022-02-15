@@ -11,6 +11,9 @@ class Program
     {
         ILogger logger = new ConsoleLogger();
         IConnector connector = new IBConnector("127.0.0.1", 7497, 0, IbDataTypes.Delayed, logger);
+
+        connector.Connect();
+
         FabricOfTraders fabricOfTraders = new FabricOfTraders(connector, logger);
 
         TcpServer server = new TcpServer(fabricOfTraders, logger);

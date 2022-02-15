@@ -13,12 +13,17 @@ public class Instrument
     public string Currency { get; init; }
     public decimal MinTick { get; set; }
     public int Multiplier { get; init; }
+    public int MarketRule { get; set; }
+
     private DateTime _lastTradeDate;
     public DateTime LastTradeDate
     {
         get { return _lastTradeDate.Date; }
         set { _lastTradeDate = value; }
     }
+
+    public virtual decimal GetTradablePrice() => LastPrice;
+
     public InstumentType InstumentType { get; init; }
 
     public event Action<Enums.TickType> InstrumentChanged = delegate { };
@@ -59,7 +64,7 @@ public class Instrument
 
     #region Last Price
     [NotMapped]
-    public virtual decimal LastPrice { get; set; }
+    public decimal LastPrice { get; set; }
     #endregion
 
     #region Theor Price

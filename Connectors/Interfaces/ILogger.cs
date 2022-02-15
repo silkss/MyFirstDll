@@ -10,5 +10,6 @@ public enum LogType
     Warm,
     Info,
     Crit,
+    Error,
     Debug
 }

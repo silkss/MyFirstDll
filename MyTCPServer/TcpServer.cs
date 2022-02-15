@@ -36,9 +36,9 @@ internal class TcpServer
             TcpClient client = _Server.AcceptTcpClient();
             NetworkStream ns = client.GetStream();
 
-            /* Пример отправки сообщения в сетевой поток */
+            /* Пример отправки сообщения в сетевой поток 
             var hello = Encoding.Default.GetBytes("hello world\n");
-            ns.Write(hello, 0, hello.Length);
+            ns.Write(hello, 0, hello.Length);*/
 
             _Logger.AddLog(LogType.Info, "Someone connected");
 

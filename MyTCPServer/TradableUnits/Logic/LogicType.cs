@@ -4,5 +4,6 @@ internal enum LogicType
 {
     OpenPosition,
     ClosePosition,
+    StrategyClosed
 }
 

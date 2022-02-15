@@ -6,6 +6,7 @@ using Connectors.Interfaces;
 using Connectors.Orders;
 using IBApi;
 using System.Globalization;
+using Connectors.Models.Strategies;
 
 namespace Connectors.IB
 {
@@ -187,6 +188,7 @@ namespace Connectors.IB
                 var option = contractDetails.Contract.ToOption();
                 option.MinTick = Convert.ToDecimal(contractDetails.MinTick);
                 option.FutureId = contractDetails.UnderConId;
+                option.MarketRule = int.Parse(contractDetails.MarketRuleIds);
 
                 if(CachedOptions.FirstOrDefault(co=> co.Id == option.Id) is Option alreadycached)
                 {
@@ -197,6 +199,7 @@ namespace Connectors.IB
                     CacheOption(option);
                     OptionAdded?.Invoke(reqId, option);
                     ClientSocket.reqMktData(option.Id, option.ToIbContract(), string.Empty, false, false, null);
+                    ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
                 }
                 return;
             }
@@ -252,21 +255,20 @@ namespace Connectors.IB
         #endregion
 
         #region Orders 
-        public void SendOptionOrder(GotOrder order, Option instrument)
+        public void SendOptionOrder(GotOrder order, Option option)
         {
-            logger.AddLog(LogType.Info, $"send order with price {order.LmtPrice}");
-
-            if (order.OrderID == default)
+            if (order.Id == -1)
             {
-                order.OrderID = nextOrderId++;
+                order.Id = nextOrderId++;
             }
 
+            logger.AddLog(LogType.Warm, $"Sending order with: price - {order.LmtPrice}");
             OpenOrders.Add(order);
-            ClientSocket.placeOrder(order.OrderID, instrument.ToIbContract(), order.ToIbOrder());
+            ClientSocket.placeOrder(order.Id, option.ToIbContract(), order.ToIbOrder());
         }
         public override void orderStatus(int orderId, string status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld, double mktCapPrice)
         {
-            var openorder = OpenOrders.Where(o => o.OrderID == orderId).FirstOrDefault();
+            var openorder = OpenOrders.Where(o => o.Id == orderId).FirstOrDefault();
             if (openorder != null)
             {
                 openorder.Status = status;
@@ -278,7 +280,7 @@ namespace Connectors.IB
         {
             if (orderState.Commission != double.MaxValue)
             {
-                var openorder = OpenOrders.Where(o => o.OrderID == orderId).FirstOrDefault();
+                var openorder = OpenOrders.Where(o => o.Id == orderId).FirstOrDefault();
                 if (openorder != null)
                 {
                     if (openorder.FilledQuantity == openorder.TotalQuantity)
@@ -346,10 +348,36 @@ namespace Connectors.IB
         };
         #endregion
 
+        #region MarketRule
+        public override void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
+        {
+            foreach (var option in CachedOptions)
+            {
+                if (option.MarketRule == marketRuleId)
+                {
+                    option.MinTick = (decimal)priceIncrements.Max(pi => pi.Increment);
+                }
+            }
+            base.marketRule(marketRuleId, priceIncrements);
+        }
+        #endregion
+
         #region Errors
         public override void error(int id, int errorCode, string errorMsg)
         {
             logger.AddLog(LogType.Warm, $"Error: {id}, {errorCode}, {errorMsg}");
+            switch (errorCode)
+            {
+                case 140:
+                    if (OpenOrders.FirstOrDefault(o => o.Id == id) is GotOrder order)
+                    {
+                        OpenOrders.Remove(order);
+                        order.Canceled();
+                    }
+                    break;                    
+                default:
+                    break;
+            }
         }
 
         public override void error(string str)

@@ -1,5 +1,6 @@
 ﻿using Connectors.Enums;
 using Connectors.Models.Instruments;
+using Connectors.Models.Strategies;
 using Connectors.Orders;
 
 namespace Connectors.Interfaces;
@@ -25,5 +26,5 @@ public interface IConnector
     IEnumerable<Option> GetCachedOptions();
     IEnumerable<string> GetAccountList();
 
-    void SendOptionOrder(GotOrder order, Option instrument);
+    void SendOptionOrder(GotOrder order, Option option);
 }
