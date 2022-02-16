@@ -6,6 +6,7 @@ using Connectors.Interfaces;
 using Connectors.Orders;
 using IBApi;
 using System.Globalization;
+using Connectors.Utils;
 
 namespace Connectors.IB
 {
@@ -30,13 +31,15 @@ namespace Connectors.IB
             get { return ClientSocket.IsConnected(); }
         }
 
-        public IBConnector(string Ip, int Port, int ClientId, IbDataTypes datatype, ILogger Logger)
+        public IBConnector()
         {
-            ip = Ip;
-            port = Port;
-            logger = Logger;
-            clientid = ClientId;
-            mktDataType = datatype;
+            var config = new IBConfig();
+            ip = config.Ip;
+            port = config.Port;
+            clientid = config.ClientId;
+            mktDataType = config.DataType;
+
+            logger = new DebugLogger();
 
             Signal = new EReaderMonitorSignal();
             ClientSocket = new EClientSocket(this, Signal);
