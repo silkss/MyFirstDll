@@ -1,4 +1,4 @@
-﻿using Connectors.Models.Instruments;
+﻿using Connectors.Interfaces;
 using IBApi;
 using System.Globalization;
 
@@ -6,31 +6,34 @@ namespace Connectors.Extensions
 {
     public static class IbContractExtensions
     {
-        public static Future ToFuture(this Contract contract) => new Future()
+        public static T ToFuture<T>(this Contract contract, T future) where T : IFuture
         {
-            Id = contract.ConId,
-            LocalSymbol = contract.LocalSymbol,
-            Symbol = contract.Symbol,
-            Echange = contract.Exchange,
-            Currency = contract.Currency,
-            Multiplier = int.Parse(contract.Multiplier),
-            LastTradeDate = DateTime.ParseExact(contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture),
-            InstumentType = Enums.InstumentType.Future
-        };
 
-        public static Option ToOption(this Contract contract) => new Option()
+            future.Id = contract.ConId;
+            future.LocalSymbol = contract.LocalSymbol;
+            future.Symbol = contract.Symbol;
+            future.Echange = contract.Exchange;
+            future.Currency = contract.Currency;
+            future.Multiplier = int.Parse(contract.Multiplier);
+            future.LastTradeDate = DateTime.ParseExact(contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture);
+            future.InstumentType = Enums.InstumentType.Future;
+            return future;
+        }
+
+        public static T ToOption<T>(this Contract contract, T option) where T : IOption
         {
-            Id = contract.ConId,
-            LocalSymbol = contract.LocalSymbol,
-            Symbol = contract.Symbol,
-            Echange = contract.Exchange,
-            Currency = contract.Currency,
-            Multiplier = int.Parse(contract.Multiplier),
-            LastTradeDate = DateTime.ParseExact(contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture),
-            InstumentType = Enums.InstumentType.Option,
-            OptionType = contract.Right == "C" ? Enums.OptionType.Call : Enums.OptionType.Put,
-            Strike = (Decimal)contract.Strike,
-            TradingClass = contract.TradingClass
-        };
+            option.Id = contract.ConId;
+            option.LocalSymbol = contract.LocalSymbol;
+            option.Symbol = contract.Symbol;
+            option.Echange = contract.Exchange;
+            option.Currency = contract.Currency;
+            option.Multiplier = int.Parse(contract.Multiplier);
+            option.LastTradeDate = DateTime.ParseExact(contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture);
+            option.InstumentType = Enums.InstumentType.Option;
+            option.OptionType = contract.Right == "C" ? Enums.OptionType.Call : Enums.OptionType.Put;
+            option.Strike = (Decimal)contract.Strike;
+            option.TradingClass = contract.TradingClass;
+            return option;
+        }
     }
 }

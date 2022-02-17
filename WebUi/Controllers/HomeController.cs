@@ -1,12 +1,13 @@
 ﻿using Connectors.Interfaces;
+using DataLayer.Models.Instruments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebUi.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly IConnector _Connector;
-    public HomeController(IConnector connector)
+    private readonly IConnector<DbFuture, DbOption> _Connector;
+    public HomeController(IConnector<DbFuture,DbOption> connector)
     {
         _Connector = connector;
     }

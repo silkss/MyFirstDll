@@ -1,15 +1,15 @@
-﻿using Connectors.Models.Instruments.Base;
+﻿using Connectors.Models.Instruments;
+using Connectors.Models_.Instruments.Base;
 using IBApi;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Connectors.Models.Instruments
+namespace Connectors.Models_.Instruments
 {
     public class Future : Instrument
     {
         [NotMapped]
         public List<OptionChain> OptionChain { get; } = new();
         public List<Option> Options { get; } = new();
-
 
         public Contract ToIbContract() => new Contract()
         {
@@ -20,18 +20,5 @@ namespace Connectors.Models.Instruments
             SecType = "FUT",
             Symbol = this.Symbol
         };
-    }
-
-    public class OptionChain
-    {
-        private string _tradingClass = string.Empty;
-        public string TradingClass 
-        { 
-            get { return _tradingClass; }
-            set { _tradingClass = value; }
-        }
-        public DateTime ExpirationDate { get; set; }
-
-        public HashSet<double> Strikes = new();
     }
 }

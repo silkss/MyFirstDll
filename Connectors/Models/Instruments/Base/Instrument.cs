@@ -2,9 +2,9 @@
 using Connectors.Helpers;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Connectors.Models.Instruments.Base;
+namespace Connectors.Models_.Instruments.Base;
 
-public class Instrument 
+public partial class Instrument 
 {
     public int Id { get; set; }
     public string LocalSymbol { get; init; }
@@ -15,14 +15,7 @@ public class Instrument
     public int Multiplier { get; init; }
     public int MarketRule { get; set; }
 
-    private DateTime _lastTradeDate;
-    public DateTime LastTradeDate
-    {
-        get { return _lastTradeDate.Date; }
-        set { _lastTradeDate = value; }
-    }
-
-    public virtual decimal GetTradablePrice() => LastPrice;
+    public DateTime LastTradeDate { get; set; }
 
     public InstumentType InstumentType { get; init; }
 

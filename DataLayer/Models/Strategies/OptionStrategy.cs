@@ -1,4 +1,5 @@
 ﻿using Connectors.Enums;
+using Connectors.Interfaces;
 using Connectors.Models.Instruments;
 using DataLayer.Enums;
 using DataLayer.Models.Strategies.Base;
@@ -11,7 +12,7 @@ public class OptionStrategy : BaseStrategy
     #region DB
     #region Instrument
     public int InstrumentId { get; set; }
-    public Option Option { get; set; }
+    public IOption Option { get; set; }
     #endregion
     #region Straddle
     public LongStraddle LongStraddle { get; set; }

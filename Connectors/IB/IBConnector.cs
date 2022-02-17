@@ -1,16 +1,18 @@
 ﻿using Connectors.Enums;
 using Connectors.Extensions;
 using Connectors.IB.Enums;
-using Connectors.Models.Instruments;
 using Connectors.Interfaces;
 using Connectors.Orders;
 using IBApi;
 using System.Globalization;
 using Connectors.Utils;
+using Connectors.Models.Instruments;
 
 namespace Connectors.IB
 {
-    public class IBConnector : DefaultEWrapper, IConnector
+    public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture, TOption>
+        where TFuture : IFuture, new()
+        where TOption : IOption, new()
     {
         private string ip;
         private int port;
@@ -23,8 +25,8 @@ namespace Connectors.IB
         private readonly EReaderSignal Signal;
         private readonly EClientSocket ClientSocket;
 
-        public Action<int, Future> FutureAdded { get; set; } = delegate { };
-        public Action<int, Option> OptionAdded { get; set; } = delegate { };
+        public Action<int, TFuture> FutureAdded { get; set; } = delegate { };
+        public Action<int, TOption> OptionAdded { get; set; } = delegate { };
 
         public bool IsConnected
         {
@@ -44,8 +46,6 @@ namespace Connectors.IB
             Signal = new EReaderMonitorSignal();
             ClientSocket = new EClientSocket(this, Signal);
 
-            CachedFutures = new List<Future>();
-            CachedOptions = new List<Option>();
             OpenOrders = new List<GotOrder>();
             AccountList = new List<string>();
 
@@ -124,13 +124,13 @@ namespace Connectors.IB
         #endregion
 
         #region Instruments
-        private readonly List<Future> CachedFutures;
-        private readonly List<Option> CachedOptions;
+        private readonly List<TFuture> CachedFutures = new();
+        private readonly List<TOption> CachedOptions = new();
         private readonly List<string> AccountList;
         private readonly List<GotOrder> OpenOrders;
         public IEnumerable<string> GetAccountList() => AccountList;
-        public IEnumerable<Future> GetCachedFutures() => CachedFutures;
-        public IEnumerable<Option> GetCachedOptions() => CachedOptions;
+        public IEnumerable<TFuture> GetCachedFutures() => CachedFutures;
+        public IEnumerable<TOption> GetCachedOptions() => CachedOptions;
 
         public int RequestFuture(string localSymbol)
         {
@@ -145,7 +145,7 @@ namespace Connectors.IB
             ClientSocket.reqContractDetails(orderid, contract);
             return orderid;
         }
-        public int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, Future parent)
+        public int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, TFuture parent)
         {
             var contract = new Contract()
             {
@@ -167,10 +167,10 @@ namespace Connectors.IB
         {
             if (contractDetails.Contract.SecType == "FUT")
             {
-                var future = contractDetails.Contract.ToFuture();
+                var future = contractDetails.Contract.ToFuture(new TFuture());
                 future.MinTick = Convert.ToDecimal(contractDetails.MinTick);
 
-                if (CachedFutures.FirstOrDefault(cf => cf.Id == future.Id) is Future alreadycached)
+                if (CachedFutures.FirstOrDefault(cf => cf.Id == future.Id) is TFuture alreadycached)
                 {
                     FutureAdded?.Invoke(reqId, alreadycached);
                 }
@@ -187,12 +187,12 @@ namespace Connectors.IB
 
             if (contractDetails.Contract.SecType == "FOP")
             {
-                var option = contractDetails.Contract.ToOption();
+                var option = contractDetails.Contract.ToOption(new TOption());
                 option.MinTick = Convert.ToDecimal(contractDetails.MinTick);
                 option.FutureId = contractDetails.UnderConId;
                 option.MarketRule = int.Parse(contractDetails.MarketRuleIds);
 
-                if(CachedOptions.FirstOrDefault(co=> co.Id == option.Id) is Option alreadycached)
+                if(CachedOptions.FirstOrDefault(co=> co.Id == option.Id) is TOption alreadycached)
                 {
                     OptionAdded?.Invoke(reqId, alreadycached);
                 }
@@ -222,14 +222,14 @@ namespace Connectors.IB
         }
 
         #region Add and Remove Instrument from Cache
-        public void CacheOption(Option option)
+        public void CacheOption(TOption option)
         {
             if (option.Id != default && !CachedOptions.Any(co => co.Id == option.Id))
             {
                 CachedOptions.Add(option);
             }
         }
-        public bool RemoveCachedFuture(Future future)
+        public bool RemoveCachedFuture(TFuture future)
         {
             if (CachedFutures.Contains(future))
             {
@@ -237,14 +237,14 @@ namespace Connectors.IB
             }
             return false;
         }
-        public void CacheFuture(Future future)
+        public void CacheFuture(TFuture future)
         {
             if (future.Id != default && !CachedFutures.Any(cf => cf.Id == future.Id))
             {
                 CachedFutures.Add(future);
             }
         }
-        public bool RemoveCachedOption(Option option)
+        public bool RemoveCachedOption(TOption option)
         {
             if (CachedOptions.Contains(option))
             {
@@ -257,7 +257,7 @@ namespace Connectors.IB
         #endregion
 
         #region Orders 
-        public void SendOptionOrder(GotOrder order, Option option)
+        public void SendOptionOrder(GotOrder order, TOption option)
         {
             if (order.Id == -1)
             {
@@ -303,6 +303,7 @@ namespace Connectors.IB
         #region MarketData
         public override void tickPrice(int tickerId, int field, double price, TickAttrib attribs)
         {
+            
             var type = GetTickTypeByField(field);
             if (!type.HasValue) return;
 
@@ -323,6 +324,7 @@ namespace Connectors.IB
                     return;
                 }
             }
+            
         }
         public override void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
         {

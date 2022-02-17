@@ -7,12 +7,12 @@ namespace TCPGotm.Infrastructure;
 /// </summary>
 internal class FabricOfTraders
 {
-    private readonly IConnector _Connector;
+    //private readonly IConnector _Connector;
     private readonly ILogger _Logger;
 
     public FabricOfTraders(IConnector connector, ILogger logger)
     {
-        _Connector = connector;
+        //_Connector = connector;
         _Logger = logger;
     }
 

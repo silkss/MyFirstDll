@@ -3,14 +3,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MFDll</title>
+    <title>@ViewData["Title"] -- MFDll</title>
 </head>
 <body>
-    <nav>
-        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
-            Main
-        </a> 
-    </nav>
+    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+        Main
+    </a> 
+    <a class="nav-link" asp-area="" asp-controller="Instruments" asp-action="Index">
+        Instruments
+    </a> 
     @RenderBody()
 </body>
 </html>

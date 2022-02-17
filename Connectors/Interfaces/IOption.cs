@@ -1,17 +1,14 @@
 ﻿using Connectors.Enums;
-using Connectors.Models_.Instruments.Base;
 using IBApi;
 
-namespace Connectors.Models_.Instruments;
+namespace Connectors.Interfaces;
 
-public class Option : Instrument
+public interface IOption : IInstrument
 {
-    public decimal Strike { get; set; }
-    public string TradingClass { get; set; }
-    public OptionType OptionType { get; set; }
-
-    public int FutureId { get; set; }
-
+    decimal Strike { get; set; }
+    string TradingClass { get; set; }
+    OptionType OptionType { get; set; }
+    int FutureId { get; set; }
     public Contract ToIbContract() => new Contract()
     {
         ConId = this.Id,
