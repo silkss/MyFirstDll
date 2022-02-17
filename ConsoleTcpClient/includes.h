@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "SecondDll/ExpDll.h"
 
 void print_help()
 {

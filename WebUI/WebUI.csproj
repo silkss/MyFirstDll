@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Connectors\Connectors.csproj" />
+    <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
   </ItemGroup>
 
 </Project>

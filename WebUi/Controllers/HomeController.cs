@@ -1,5 +1,4 @@
-﻿using Connectors.IB;
-using Connectors.Interfaces;
+﻿using Connectors.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebUi.Controllers;
