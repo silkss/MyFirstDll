@@ -9,10 +9,11 @@ namespace DataLayer.Models.Instruments;
 public class DbOption : IOption, IEntity
 {
     public int Id { get; set; }
+    public int ConId { get; set; }
     public decimal Strike { get; set; }
     public string TradingClass { get; set; }
     public OptionType OptionType { get; set; }
-    public int FutureId { get; set; }
+    public int UnderlyingId { get; set; }
     public string LocalSymbol { get; set; }
     public string Symbol { get; set; }
     public string Echange { get; set; }

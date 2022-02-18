@@ -9,7 +9,7 @@ namespace Connectors.Extensions
         public static T ToFuture<T>(this Contract contract, T future) where T : IFuture
         {
 
-            future.Id = contract.ConId;
+            future.ConId = contract.ConId;
             future.LocalSymbol = contract.LocalSymbol;
             future.Symbol = contract.Symbol;
             future.Echange = contract.Exchange;
@@ -22,7 +22,7 @@ namespace Connectors.Extensions
 
         public static T ToOption<T>(this Contract contract, T option) where T : IOption
         {
-            option.Id = contract.ConId;
+            option.ConId = contract.ConId;
             option.LocalSymbol = contract.LocalSymbol;
             option.Symbol = contract.Symbol;
             option.Echange = contract.Exchange;

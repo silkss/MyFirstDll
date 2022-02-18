@@ -4,7 +4,7 @@ namespace Connectors.Interfaces;
 
 public interface IInstrument
 {
-    public int Id { get; set; }
+    public int ConId { get; set; }
     public string LocalSymbol { get; set; }
     public string Symbol { get; set; }
     public string Echange { get; set; }

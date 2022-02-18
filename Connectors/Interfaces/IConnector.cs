@@ -16,7 +16,7 @@ public interface IConnector<TFuture, TOption>
 
     int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, TFuture parent);
     int RequestFuture(string localSymbol);
-
+    Task<TFuture?> RequestFutureAsync(string localSymbol);
     void CacheFuture(TFuture future);
     bool RemoveCachedFuture(TFuture future);
     void CacheOption(TOption option);

@@ -4,6 +4,7 @@ using Connectors.Models.Instruments;
 using DataLayer.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Instruments;
@@ -14,6 +15,7 @@ public class DbFuture : IFuture, IEntity
     public List<OptionChain> OptionChain { get; } = new();
 
     public int Id { get; set; }
+    public int ConId { get; set; }
     public string LocalSymbol { get; set; }
     public string Symbol { get; set; }
     public string Echange { get; set; }
@@ -37,6 +39,6 @@ public class DbFuture : IFuture, IEntity
 
     public void Notify(TickType type, double price)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Connectors.Interfaces;
-using DataLayer.Models.Instruments;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -7,43 +6,32 @@ namespace WebUi.Controllers
 {
     public class InstrumentsController : Controller
     {
-
-        private readonly DataContext _dbcontext;
+        private readonly DataContext _dataContext;
         private readonly IConnector<DbFuture, DbOption> _connector;
 
-        public InstrumentsController(DataContext dbcontext, IConnector<DbFuture,DbOption> connector)
+        public InstrumentsController(DbWorker dbWorker, DataContext dataContext, IConnector<DbFuture, DbOption> connector)
         {
-            _dbcontext = dbcontext;
+            _dataContext = dataContext;
             _connector = connector;
         }
+
         public async Task<IActionResult> Index()
         {
-            var futs = await _dbcontext.Futures.ToListAsync();
-            var options = await _dbcontext.Options.ToListAsync();
-
-            ViewData["NumberOfFutures"] = futs.Count;
-            ViewData["NumberOfOptions"] = options.Count;
+            var fut = await _dataContext.Futures.ToListAsync();
+            ViewData["NumberOfFutures"] = fut.Count;
             return View();
         }
 
         [HttpPost]
-        public Task<IActionResult> AddFuture(string localSymbol)
+        public async Task<IActionResult> AddFuture(string localSymbol)
         {
-            _connector.RequestFuture(localSymbol);
-            return Index();
-        }
-        public async Task<IActionResult> Futures()
-        {
-            var futs = await _dbcontext.Futures.ToListAsync();
-            ViewData["Futures"] = futs;
-            return View();
-        }
-
-        public async Task<IActionResult> Options()
-        {
-            var options = await _dbcontext.Options.ToListAsync();
-            ViewData["Options"] = options;
-            return View();
+            var fut = await _connector.RequestFutureAsync(localSymbol);
+            if (fut != null)
+            {
+                _dataContext.Futures.Add(fut);
+                _dataContext.SaveChanges();
+            }
+            return Ok();
         }
     }
 }

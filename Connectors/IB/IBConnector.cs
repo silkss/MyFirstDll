@@ -25,6 +25,9 @@ namespace Connectors.IB
         private readonly EReaderSignal Signal;
         private readonly EClientSocket ClientSocket;
 
+        private readonly object _futureLock = new();
+        private readonly Queue<(int, TFuture?)> _futureQueue = new();
+
         public Action<int, TFuture> FutureAdded { get; set; } = delegate { };
         public Action<int, TOption> OptionAdded { get; set; } = delegate { };
 
@@ -85,12 +88,12 @@ namespace Connectors.IB
 
             CachedFutures.ForEach(future =>
             {
-                ClientSocket.reqSecDefOptParams(future.Id, future.Symbol, future.Echange, "FUT", future.Id);
-                ClientSocket.reqMktData(future.Id, future.ToIbContract(), string.Empty, false, false, null);
-                ClientSocket.reqHistoricalData(future.Id, future.ToIbContract(), string.Empty, "1 M", "1 M", "TRADES", 1, 1, true, null);
+                ClientSocket.reqSecDefOptParams(future.ConId, future.Symbol, future.Echange, "FUT", future.ConId);
+                ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
+                ClientSocket.reqHistoricalData(future.ConId, future.ToIbContract(), string.Empty, "1 M", "1 M", "TRADES", 1, 1, true, null);
             });
 
-            CachedOptions.ForEach(option => ClientSocket.reqMktData(option.Id, option.ToIbContract(), string.Empty, false, false, null));
+            CachedOptions.ForEach(option => ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null));
         }
 
         public void Disconnect()
@@ -128,6 +131,7 @@ namespace Connectors.IB
         private readonly List<TOption> CachedOptions = new();
         private readonly List<string> AccountList;
         private readonly List<GotOrder> OpenOrders;
+        private readonly List<int> instrumentreqlist = new();
         public IEnumerable<string> GetAccountList() => AccountList;
         public IEnumerable<TFuture> GetCachedFutures() => CachedFutures;
         public IEnumerable<TOption> GetCachedOptions() => CachedOptions;
@@ -144,6 +148,24 @@ namespace Connectors.IB
             var orderid = nextOrderId++;
             ClientSocket.reqContractDetails(orderid, contract);
             return orderid;
+        }
+        public async Task<TFuture?> RequestFutureAsync(string localSymbol)
+        {
+            int req = RequestFuture(localSymbol);
+            TFuture? future = default(TFuture);
+            await Task.Run(() =>
+            {
+                lock(_futureLock)
+                {
+                    while(!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
+                    {
+                        Monitor.Wait(_futureLock);
+                    }
+                    (_, future) = _futureQueue.Dequeue();
+                }
+            });
+
+            return future;
         }
         public int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, TFuture parent)
         {
@@ -170,17 +192,27 @@ namespace Connectors.IB
                 var future = contractDetails.Contract.ToFuture(new TFuture());
                 future.MinTick = Convert.ToDecimal(contractDetails.MinTick);
 
-                if (CachedFutures.FirstOrDefault(cf => cf.Id == future.Id) is TFuture alreadycached)
+                if (CachedFutures.FirstOrDefault(cf => cf.ConId == future.ConId) is TFuture alreadycached)
                 {
+                    lock(_futureLock)
+                    {
+                        _futureQueue.Enqueue((reqId, alreadycached));
+                        Monitor.Pulse(_futureLock);
+                    }
                     FutureAdded?.Invoke(reqId, alreadycached);
                 }
                 else
                 {
                     CacheFuture(future);
+                    lock (_futureLock)
+                    {
+                        _futureQueue.Enqueue((reqId, future));
+                        Monitor.Pulse(_futureLock);
+                    }
                     FutureAdded?.Invoke(reqId, future);
 
-                    ClientSocket.reqMktData(future.Id, future.ToIbContract(), string.Empty, false, false, null);
-                    ClientSocket.reqSecDefOptParams(future.Id, future.Symbol, future.Echange, "FUT", future.Id);
+                    ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
+                    ClientSocket.reqSecDefOptParams(future.ConId, future.Symbol, future.Echange, "FUT", future.ConId);
                 }
                 return;
             }
@@ -189,10 +221,10 @@ namespace Connectors.IB
             {
                 var option = contractDetails.Contract.ToOption(new TOption());
                 option.MinTick = Convert.ToDecimal(contractDetails.MinTick);
-                option.FutureId = contractDetails.UnderConId;
+                option.UnderlyingId = contractDetails.UnderConId;
                 option.MarketRule = int.Parse(contractDetails.MarketRuleIds);
 
-                if(CachedOptions.FirstOrDefault(co=> co.Id == option.Id) is TOption alreadycached)
+                if(CachedOptions.FirstOrDefault(co=> co.ConId == option.ConId) is TOption alreadycached)
                 {
                     OptionAdded?.Invoke(reqId, alreadycached);
                 }
@@ -200,7 +232,7 @@ namespace Connectors.IB
                 {
                     CacheOption(option);
                     OptionAdded?.Invoke(reqId, option);
-                    ClientSocket.reqMktData(option.Id, option.ToIbContract(), string.Empty, false, false, null);
+                    ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
                     ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
                 }
                 return;
@@ -208,7 +240,7 @@ namespace Connectors.IB
         }
         public override void securityDefinitionOptionParameter(int reqId, string exchange, int underlyingConId, string tradingClass, string multiplier, HashSet<string> expirations, HashSet<double> strikes)
         {
-            var fut = CachedFutures.Where(f => f.Id == reqId).FirstOrDefault();
+            var fut = CachedFutures.Where(f => f.ConId == reqId).FirstOrDefault();
             if (fut != null)
             {
                 foreach (var expiration in expirations)
@@ -224,7 +256,7 @@ namespace Connectors.IB
         #region Add and Remove Instrument from Cache
         public void CacheOption(TOption option)
         {
-            if (option.Id != default && !CachedOptions.Any(co => co.Id == option.Id))
+            if (option.ConId != default && !CachedOptions.Any(co => co.ConId == option.ConId))
             {
                 CachedOptions.Add(option);
             }
@@ -239,7 +271,7 @@ namespace Connectors.IB
         }
         public void CacheFuture(TFuture future)
         {
-            if (future.Id != default && !CachedFutures.Any(cf => cf.Id == future.Id))
+            if (future.ConId != default && !CachedFutures.Any(cf => cf.ConId == future.ConId))
             {
                 CachedFutures.Add(future);
             }
@@ -309,7 +341,7 @@ namespace Connectors.IB
 
             foreach (var instrument in CachedFutures)
             {
-                if (instrument.Id == tickerId)
+                if (instrument.ConId == tickerId)
                 {
                     instrument.Notify(type.Value, price);
                     return;
@@ -318,7 +350,7 @@ namespace Connectors.IB
 
             foreach (var option in CachedOptions)
             {
-                if (option.Id == tickerId)
+                if (option.ConId == tickerId)
                 {
                     option.Notify(type.Value, price);
                     return;
@@ -334,7 +366,7 @@ namespace Connectors.IB
 
             foreach (var option in CachedOptions)
             {
-                if (option.Id == tickerId)
+                if (option.ConId == tickerId)
                 {
                     option.Notify(Connectors.Enums.TickType.TheorPrice, optPrice);
                 }

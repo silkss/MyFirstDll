@@ -8,7 +8,7 @@ public interface IFuture : IInstrument
     List<OptionChain> OptionChain { get; }
     Contract ToIbContract() => new Contract()
     {
-        ConId = this.Id,
+        ConId = this.ConId,
         LocalSymbol = this.LocalSymbol,
         Currency = this.Currency,
         Exchange = this.Echange,

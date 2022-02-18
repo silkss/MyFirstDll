@@ -8,10 +8,10 @@ public interface IOption : IInstrument
     decimal Strike { get; set; }
     string TradingClass { get; set; }
     OptionType OptionType { get; set; }
-    int FutureId { get; set; }
+    int UnderlyingId { get; set; }
     public Contract ToIbContract() => new Contract()
     {
-        ConId = this.Id,
+        ConId = this.ConId,
         Currency = this.Currency,
         Exchange = this.Echange,
         Right = this.OptionType == OptionType.Call ? "C" : "P",
