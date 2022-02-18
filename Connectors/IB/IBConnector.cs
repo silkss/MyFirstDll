@@ -410,7 +410,15 @@ namespace Connectors.IB
                         OpenOrders.Remove(order);
                         order.Canceled();
                     }
-                    break;                    
+                    break;
+                case 200:
+                    lock(_futureLock)
+                    {
+                        var tup = (id, default(TFuture));
+                        _futureQueue.Enqueue(tup);
+                        Monitor.Pulse(_futureLock);
+                    }
+                    break;
                 default:
                     break;
             }

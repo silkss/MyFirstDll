@@ -16,4 +16,12 @@ public class HomeController : Controller
         ViewData["Connected"] = _Connector.IsConnected;
         return View();
     }
+
+    public IActionResult Connect()
+    {
+        if (!_Connector.IsConnected)
+            _Connector.Connect();
+
+        return View();
+    }
 }

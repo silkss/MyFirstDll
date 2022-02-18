@@ -28,8 +28,11 @@ namespace WebUi.Controllers
             var fut = await _connector.RequestFutureAsync(localSymbol);
             if (fut != null)
             {
-                _dataContext.Futures.Add(fut);
-                _dataContext.SaveChanges();
+                if ( (await _dataContext.Futures.FirstOrDefaultAsync(f => f.ConId == fut.ConId)) is null)
+                {
+                    _dataContext.Futures.Add(fut);
+                    _dataContext.SaveChanges();
+                }
             }
             return Ok();
         }
