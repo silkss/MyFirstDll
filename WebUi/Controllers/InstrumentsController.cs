@@ -17,9 +17,8 @@ namespace WebUi.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var fut = await _dataContext.Futures.ToListAsync();
-            ViewData["NumberOfFutures"] = fut.Count;
-            return View();
+            var futs = await _dataContext.Futures.ToListAsync();
+            return View(futs);
         }
 
         [HttpPost]
