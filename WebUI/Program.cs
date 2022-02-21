@@ -1,7 +1,6 @@
 global using Microsoft.EntityFrameworkCore;
 global using DataLayer;
 global using DataLayer.Models.Instruments;
-global using WebUi.Services.Workers;
 
 using Connectors.IB;
 using Connectors.Interfaces;
@@ -20,7 +19,6 @@ builder.Services.AddDbContext<DataContext>(options =>
         b.MigrationsAssembly("WebUi");
     });
 });
-builder.Services.AddSingleton<DbWorker>();
 
 var app = builder.Build();
 

@@ -155,13 +155,20 @@ namespace Connectors.IB
             TFuture? future = default(TFuture);
             await Task.Run(() =>
             {
-                lock(_futureLock)
+                try
                 {
-                    while(!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
+                    lock (_futureLock)
                     {
-                        Monitor.Wait(_futureLock);
+                        while (!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
+                        {
+                            Monitor.Wait(_futureLock);
+                        }
+                        (_, future) = _futureQueue.Dequeue();
                     }
-                    (_, future) = _futureQueue.Dequeue();
+                }
+                catch (InvalidOperationException)
+                {
+                    future = default(TFuture);
                 }
             });
 

@@ -9,7 +9,7 @@ namespace WebUi.Controllers
         private readonly DataContext _dataContext;
         private readonly IConnector<DbFuture, DbOption> _connector;
 
-        public InstrumentsController(DbWorker dbWorker, DataContext dataContext, IConnector<DbFuture, DbOption> connector)
+        public InstrumentsController(DataContext dataContext, IConnector<DbFuture, DbOption> connector)
         {
             _dataContext = dataContext;
             _connector = connector;

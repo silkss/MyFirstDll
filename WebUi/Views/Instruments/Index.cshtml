@@ -10,10 +10,10 @@
     <input type="text" name="localSymbol"/>
     <input type="submit" value="Add"/>
 </form>
-
-@foreach (var item in Model)
-{
-    <tr>
+<table>
+    @foreach (var item in Model)
+    {
+        <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.ConId)
             </td>
@@ -27,5 +27,6 @@
                 @Html.DisplayFor(modelItem => item.MinTick)
             </td>
         </tr>
-}
+    }
+</table>
 
