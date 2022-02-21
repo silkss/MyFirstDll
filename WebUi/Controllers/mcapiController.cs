@@ -1,12 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace WebUi.Controllers
+namespace WebUi.Controllers;
+
+public class mcapiController : Controller
 {
-    public class mcapiController : Controller
+    private readonly DataContext _dataContext;
+
+    public mcapiController(DataContext dataContext)
     {
-        public IActionResult Index(string symbol, float price, string signaltype)
+        _dataContext = dataContext;
+    }
+
+    public IActionResult Index(string symbol, float price, string signaltype)
+    {
+        var fut = _dataContext.Futures.FirstOrDefaultAsync(f => f.LocalSymbol == symbol);
+
+        if (fut != null)
         {
-            return Ok();
+            
         }
+        return Ok();
     }
 }
