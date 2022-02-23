@@ -4,9 +4,10 @@ namespace WebUi.Controllers
 {
     public class ContainersController : Controller
     {
-        public IActionResult Index()
+        public IActionResult Index(StrategeisRepository strategeisRepository)
         {
-            return View();
+            var containers = strategeisRepository.GetAll();
+            return View(containers);
         }
     }
 }

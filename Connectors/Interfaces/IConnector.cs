@@ -2,7 +2,11 @@
 using Connectors.Orders;
 
 namespace Connectors.Interfaces;
-
+/// <summary>
+/// Заменить template elements на интерфейсы
+/// </summary>
+/// <typeparam name="TFuture"></typeparam>
+/// <typeparam name="TOption"></typeparam>
 public interface IConnector<TFuture, TOption> 
     where TFuture : IFuture, new()
     where TOption : IOption, new()

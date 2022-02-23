@@ -1,5 +1,4 @@
 ﻿using Connectors.Interfaces;
-using DataLayer.Models.Instruments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebUi.Controllers;
