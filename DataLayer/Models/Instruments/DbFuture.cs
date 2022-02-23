@@ -4,12 +4,12 @@ using Connectors.Models.Instruments;
 using DataLayer.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DataLayer.Models.Instruments;
 
-public class DbFuture : IFuture, IEntity
+public class DbFuture : IFuture, IEntity, IComparable
 {
     [NotMapped]
     public List<OptionChain> OptionChain { get; } = new();
@@ -37,8 +37,15 @@ public class DbFuture : IFuture, IEntity
 
     public event Action<TickType> InstrumentChanged = delegate { };
 
+    public int CompareTo(object? obj)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Notify(TickType type, double price)
     {
         //throw new NotImplementedException();
     }
+
 }
+

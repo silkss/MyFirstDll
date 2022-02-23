@@ -6,8 +6,7 @@ namespace WebUi.Controllers
     {
         public IActionResult Index(StrategeisRepository strategeisRepository)
         {
-            var containers = strategeisRepository.GetAll();
-            return View(containers);
+            return View();
         }
     }
 }

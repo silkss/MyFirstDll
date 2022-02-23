@@ -151,6 +151,9 @@ namespace Connectors.IB
         }
         public async Task<TFuture?> RequestFutureAsync(string localSymbol)
         {
+            if (!ClientSocket.IsConnected())
+                return default(TFuture);
+
             int req = RequestFuture(localSymbol);
             TFuture? future = default(TFuture);
             await Task.Run(() =>
