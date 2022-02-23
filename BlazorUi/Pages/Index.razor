@@ -9,8 +9,18 @@
 
 <h1>Hello, world!</h1>
 
-<h2>Connected <input type="checkbox" @bind="_connected" disabled="disabled"/></h2>
-<button class="btn btn-primary" @onclick="Connect">Connect</button>
+<div class="row">
+    <div class="col">
+        @if (_connected)
+        {
+            <button class="btn btn-danger" @onclick="Disconnect">Disconnect</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="Connect">Connect</button>
+        }
+    </div>
+</div>
 
 <div class="row">
     <div class="col">
@@ -20,36 +30,36 @@
         <button class="btn btn-success" @onclick="AddFuture">Add</button>
     </div>
 </div>
-
-@if (_futures == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Local symbol</th>
-                <th>Currency</th>
-                <th>Last Trade Date</th>
-                <th>Echange</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var future in _futures)
-            {
+<div class="row">
+    @if (_futures == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@future.LocalSymbol</td>
-                    <td>@future.Currency</td>
-                    <td>@future.LastTradeDate.ToShortDateString()</td>
-                    <td>@future.Echange</td>
+                    <th>Local symbol</th>
+                    <th>Currency</th>
+                    <th>Last Trade Date</th>
+                    <th>Echange</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
-
+            </thead>
+            <tbody>
+                @foreach (var future in _futures)
+                {
+                    <tr>
+                        <td>@future.LocalSymbol</td>
+                        <td>@future.Currency</td>
+                        <td>@future.LastTradeDate.ToShortDateString()</td>
+                        <td>@future.Echange</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 <SurveyPrompt Title="How is Blazor working for you?" />
 
 @code {
@@ -78,6 +88,11 @@ else
     private void Connect()
     {
         _Connector.Connect();
+        _connected = _Connector.IsConnected;
+    }
+    private void Disconnect()
+    {
+        _Connector.Disconnect();
         _connected = _Connector.IsConnected;
     }
 
