@@ -31,6 +31,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 #region Scoped
 builder.Services.AddScoped<FutureRepository>();
 builder.Services.AddScoped<ContainersRepository>();
+builder.Services.AddScoped<OptionRepository>();
 #endregion
 
 var app = builder.Build();
@@ -50,6 +51,7 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapGet("/api/mcapi", (string symbol, double price, string type, TraderWorker worker) =>
 {
-    //тут будет инициализациия открытия\закрытия страддла в контенере.
+    worker.Signal(symbol, price, type); 
 });
+
 app.Run();

@@ -9,53 +9,53 @@
 <h3>Instruments</h3>
 
 <div class="row">
-    @if (_Connector.IsConnected)
-    {
-        <div class="col">
-            <input placeholder="type instrument local symbol" @bind="_localSymbol"/>
-        </div>    
-        <div class="col">
-            <button class="btn btn-success" @onclick="AddFuture">Add</button>
-        </div>
-    }
-    else
-    {
-        <div class="col">
-            <strong>You cannot add new instruments if connector disconnected!</strong>
-        </div>
-    }
+@if (_Connector.IsConnected)
+{
+    <div class="col">
+        <input placeholder="type instrument local symbol" @bind="_localSymbol"/>
+    </div>    
+    <div class="col">
+        <button class="btn btn-success" @onclick="AddFuture">Add</button>
+    </div>
+}
+else
+{
+    <div class="col">
+        <strong>You cannot add new instruments if connector disconnected!</strong>
+    </div>
+}
 </div>
 
 
 <div class="row">
-    @if (_futures == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Local symbol</th>
-                    <th>Currency</th>
-                    <th>Last Trade Date</th>
-                    <th>Echange</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var future in _futures)
-                {
-                    <tr>
-                        <td>@future.LocalSymbol</td>
-                        <td>@future.Currency</td>
-                        <td>@future.LastTradeDate.ToShortDateString()</td>
-                        <td>@future.Echange</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+@if (_futures == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Local symbol</th>
+                <th>Currency</th>
+                <th>Last Trade Date</th>
+                <th>Echange</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var future in _futures)
+        {
+            <tr>
+                <td>@future.LocalSymbol</td>
+                <td>@future.Currency</td>
+                <td>@future.LastTradeDate.ToShortDateString()</td>
+                <td>@future.Echange</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
 </div>
 
 @code {
@@ -79,7 +79,6 @@
         }
     }
 
-    
     private async Task AddFuture()
     {
         if (string.IsNullOrEmpty(_localSymbol)) return;
@@ -103,4 +102,5 @@
             _localSymbol = string.Empty;
         }
     }
+
 }

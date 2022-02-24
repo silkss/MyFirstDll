@@ -8,7 +8,14 @@ namespace DataLayer.Models.Instruments;
 
 public class DbOption : IOption, IEntity
 {
+    #region DbReferences
     public int Id { get; set; }
+    #region Future
+    public int FutureId { get; set; }
+    public DbFuture Future { get; set; }
+    #endregion
+    #endregion
+
     public int ConId { get; set; }
     public decimal Strike { get; set; }
     public string TradingClass { get; set; }
@@ -37,6 +44,6 @@ public class DbOption : IOption, IEntity
 
     public void Notify(TickType type, double price)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
 }

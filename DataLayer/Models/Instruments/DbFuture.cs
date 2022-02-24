@@ -6,7 +6,6 @@ using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DataLayer.Models.Instruments;
 
@@ -39,6 +38,9 @@ public class DbFuture : IFuture, IEntity, IComparable
     #region Db references
     #region Containers
     public List<Container> Containers { get; set; } = new();
+    #endregion
+    #region Options
+    public List<DbOption> Options { get; set; } = new();
     #endregion
     #endregion
 
