@@ -1,0 +1,32 @@
+﻿@using BlazorUi.Services
+@using Connectors.Interfaces
+
+@inject IConnector<DbFuture,DbOption> _Connector
+
+<div class="col">
+    <div>
+        @if (_Connector.IsConnected)
+        {
+            <strong>Connector now connected</strong>
+        }
+        else
+        {
+            <strong>Connector now disconnected</strong>
+        }
+    </div>
+
+</div>
+<div class="col">
+    @if (_Connector.IsConnected)
+    {
+        <button class="btn btn-danger" @onclick="(()=> _Connector.Disconnect())">Disconnect</button>
+    }
+    else
+    {
+        <button class="btn btn-primary" @onclick="(() => _Connector.Connect())">Connect</button>
+    }
+</div>
+
+@code {
+
+}

@@ -3,8 +3,8 @@
 
 @page "/strategies"
 
-@inject ContainersRepository _ContainerRepository
 @inject FutureRepository _FutureRepository
+@inject ContainersRepository _ContainerRepository
 @inject IConnector<DbFuture, DbOption> _Connector
 @inject TraderWorker _Worker
 
@@ -17,7 +17,7 @@
     }
     else if (_futures.Count == 0 || !_Connector.IsConnected)
     {
-        <p><em>No Futures in Db. You need to add some Futures</em></p>
+        <p><em>No Futures in Db. You need to add some Futures or cannot get accounts list</em></p>
     }
     else
     {
@@ -70,7 +70,16 @@
                 {
                     <tr>
                         <td>@container.Future.LocalSymbol</td>
-                        <td> <input type="checkbox" disabled="disabled" @bind="@container.Started"/></td>
+                        <td>
+                            @if (container.Started)
+                            {
+                                <p>Started</p>
+                            }
+                            else
+                            {
+                                <p>Stopped</p>
+                            }
+                        </td>
                         <td>
                             @if (@container.Started)
                             {
