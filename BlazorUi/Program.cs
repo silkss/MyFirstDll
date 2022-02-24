@@ -20,6 +20,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     });
 });
 builder.Services.AddScoped<FutureRepository>();
+builder.Services.AddSingleton<TraderWorker>();
 builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();

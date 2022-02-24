@@ -1,6 +1,5 @@
 ﻿using Connectors.Enums;
 using Connectors.Interfaces;
-using Connectors.Models.Instruments;
 using DataLayer.Enums;
 using DataLayer.Models.Strategies.Base;
 using System.Collections.Generic;
@@ -26,6 +25,4 @@ public class OptionStrategy : BaseStrategy
     public int Volume { get; set; }
     public Direction Direction { get; set; }
     public StrategyLogic StrategyLogic { get; set; }
-
-
 }

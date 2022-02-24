@@ -10,7 +10,13 @@ namespace DataLayer.Models.Strategies;
 public class Container : IEntity
 {
     public int Id { get; set; }
+    #region  DbReference
+    #region Future
     public int FutureId { get; set; }
     public DbFuture Future { get; set; }
+    #endregion
+    #endregion
+
+    public string Account { get; set; }
     public List<LongStraddle> LongStraddles { get; set; } = new();
 }

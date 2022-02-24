@@ -1,7 +1,6 @@
 ﻿using DataLayer.Enums;
 using DataLayer.Interfaces;
 using DataLayer.Models.Strategies;
-using System.Collections.Generic;
 
 namespace DataLayer.Models;
 
@@ -14,7 +13,7 @@ public class LongStraddle : IEntity
     public int ContainerId { get; set; }
     public Container Container { get; set; }
 
-    public List<OptionStrategy> OptionStrategies { get; set; } = new();
+    //public List<OptionStrategy> OptionStrategies { get; set; } = new();
 
     #endregion
 }

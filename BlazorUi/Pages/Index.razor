@@ -30,6 +30,7 @@
         <button class="btn btn-success" @onclick="AddFuture">Add</button>
     </div>
 </div>
+
 <div class="row">
     @if (_futures == null)
     {
@@ -60,6 +61,7 @@
         </table>
     }
 </div>
+
 <SurveyPrompt Title="How is Blazor working for you?" />
 
 @code {
@@ -90,6 +92,7 @@
         _Connector.Connect();
         _connected = _Connector.IsConnected;
     }
+
     private void Disconnect()
     {
         _Connector.Disconnect();
