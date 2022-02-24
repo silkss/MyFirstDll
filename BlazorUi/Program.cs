@@ -11,7 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+#region Singletons
 builder.Services.AddSingleton<IConnector<DbFuture, DbOption>, IBConnector<DbFuture, DbOption>>();
+builder.Services.AddSingleton<TraderWorker>();
+builder.Services.AddSingleton<WeatherForecastService>();
+#endregion
+
+#region DB Context
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
@@ -19,9 +26,12 @@ builder.Services.AddDbContext<DataContext>(options =>
         b.MigrationsAssembly("BlazorUi");
     });
 });
+#endregion
+
+#region Scoped
 builder.Services.AddScoped<FutureRepository>();
-builder.Services.AddSingleton<TraderWorker>();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddScoped<ContainersRepository>();
+#endregion
 
 var app = builder.Build();
 

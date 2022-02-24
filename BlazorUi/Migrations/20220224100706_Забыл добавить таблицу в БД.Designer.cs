@@ -4,6 +4,7 @@ using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorUi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220224100706_Забыл добавить таблицу в БД")]
+    partial class ЗабылдобавитьтаблицувБД
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,17 +188,12 @@ namespace BlazorUi.Migrations
             modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany("Containers")
+                        .WithMany()
                         .HasForeignKey("FutureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Future");
-                });
-
-            modelBuilder.Entity("DataLayer.Models.Instruments.DbFuture", b =>
-                {
-                    b.Navigation("Containers");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>

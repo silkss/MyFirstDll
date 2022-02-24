@@ -1,6 +1,124 @@
-﻿@page "/strategies"
+﻿@using BlazorUi.Services
+@using Connectors.Interfaces
+
+@page "/strategies"
+
+@inject ContainersRepository _ContainerRepository
+@inject FutureRepository _FutureRepository
+@inject IConnector<DbFuture, DbOption> _Connector
+
 <h3>Strategies</h3>
 
-@code {
+<div class="row">
+    @if (_futures == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else if (_futures.Count == 0 || !_Connector.IsConnected)
+    {
+        <p><em>No Futures in Db. You need to add some Futures</em></p>
+    }
+    else
+    {
+        <div class="col">
+            <select class="form-select" @onchange="((e) => int.TryParse(e.Value?.ToString(), out _selectedFutureId))">
+                <option value="-1">Select your future.</option>
+                @foreach (var future in _futures)
+                {
+                    <option value="@future.Id">@future.LocalSymbol</option>
+                }
+            </select>
+        </div>
 
+        <div class="col">
+            <select class="form-select" @onchange="((e) => _selectedAccount = e.Value?.ToString())">
+                <option>Select your account.</option>
+                @foreach (var account in _Connector.GetAccountList())
+                {
+                    <option>@account</option>
+                }
+            </select>
+        </div>
+
+        <div class="col">
+            <button class="btn btn-success" @onclick="AddContainer">Add</button>
+        </div>
+    }
+</div>
+
+<div class="row">
+    @if (_containers == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else if (_containers.Count == 0)
+    {
+        <p><em>No strategies in Db!</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Parent Instrument</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var container in _containers)
+                {
+                    <tr>
+                        <td>@container.Future.LocalSymbol</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+@code {
+    private IList<Container>? _containers;
+    private IList<DbFuture>? _futures;
+
+    private int _selectedFutureId = -1;
+    private string? _selectedAccount;
+
+    private bool _loadingContainers;
+    private bool _loadingFuture;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (_loadingContainers || _loadingFuture) return;
+        try
+        {
+            _loadingContainers = true;
+            _loadingContainers = true;
+
+            _futures = await _FutureRepository.GetAllAsync();
+            _containers = await _ContainerRepository.GetAllAsync();
+
+            if (_containers == null)
+                _containers = new List<Container>();
+
+            if (_futures == null)
+                _futures = new List<DbFuture>();
+        }
+        finally
+        {
+            _loadingContainers = false;
+        }
+    }
+
+    private async Task AddContainer()
+    {
+        if (_selectedFutureId == -1 || !_Connector.GetAccountList().Contains(_selectedAccount)) return;
+
+        var fut = await _FutureRepository.GetByIdAsync(_selectedFutureId);
+        if (fut == null || _selectedAccount == null) return;
+
+        var newContainer = new Container { Future = fut, FutureId = fut.Id, Account = _selectedAccount };
+        if (await _ContainerRepository.CreateAsync(newContainer))
+        {
+            _containers?.Add(newContainer);
+        }
+    }
 }

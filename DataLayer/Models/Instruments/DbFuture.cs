@@ -2,6 +2,7 @@
 using Connectors.Interfaces;
 using Connectors.Models.Instruments;
 using DataLayer.Interfaces;
+using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,6 +35,12 @@ public class DbFuture : IFuture, IEntity, IComparable
     public decimal LastPrice { get; set; }
     [NotMapped]
     public decimal TheorPrice { get; set; }
+
+    #region Db references
+    #region Containers
+    public List<Container> Containers { get; set; } = new();
+    #endregion
+    #endregion
 
     public event Action<TickType> InstrumentChanged = delegate { };
 
