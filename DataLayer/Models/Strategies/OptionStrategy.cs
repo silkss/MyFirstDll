@@ -3,6 +3,7 @@ using Connectors.Interfaces;
 using DataLayer.Enums;
 using DataLayer.Models.Strategies.Base;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Strategies;
 
@@ -18,6 +19,7 @@ public class OptionStrategy : BaseStrategy
     public int LongStraddleId { get; set; }
     #endregion
     #region Orders
+    [NotMapped]
     public List<DbOrder> StrategyOrders { get; set; }
     #endregion
     #endregion

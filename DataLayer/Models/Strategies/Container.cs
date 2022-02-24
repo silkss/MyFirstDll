@@ -1,6 +1,7 @@
 ﻿using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Strategies;
 /// <summary>
@@ -15,8 +16,21 @@ public class Container : IEntity
     public int FutureId { get; set; }
     public DbFuture Future { get; set; }
     #endregion
-    #endregion
 
-    public string Account { get; set; }
     public List<LongStraddle> LongStraddles { get; set; } = new();
+
+    #endregion
+    [NotMapped]
+    public bool Started { get; private set; }
+    public string Account { get; set; }
+
+    public void Start()
+    {
+        Started = true;
+    }
+
+    public void Stop()
+    {
+        Started = false;
+    }
 }

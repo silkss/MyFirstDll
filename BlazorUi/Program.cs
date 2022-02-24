@@ -48,5 +48,8 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
+app.MapGet("/api/mcapi", (string symbol, double price, string type, TraderWorker worker) =>
+{
+    //тут будет инициализациия открытия\закрытия страддла в контенере.
+});
 app.Run();
