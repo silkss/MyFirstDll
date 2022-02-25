@@ -1,4 +1,7 @@
-﻿using DataLayer.Interfaces;
+﻿using Connectors.Enums;
+using Connectors.Interfaces;
+using Connectors.Models.Instruments;
+using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using System;
 using System.Collections.Generic;
@@ -40,21 +43,23 @@ public class Container : IEntity
         Started = false;
     }
 
-    public void OpenStraddle(double price)
+    public LongStraddle ChooseBestOptionChain(double price)
     {
-        var oc = Future.OptionChain
+        var optionChain = Future.OptionChain
             .OrderByDescending(oc => oc.ExpirationDate)
             .Reverse()
             .FirstOrDefault(oc => _period > (oc.ExpirationDate - DateTime.Now));
 
-        if (oc == null) return;
+        if (optionChain == null) return;
 
-        var strike =oc.Strikes.OrderByDescending(s => s)
+        var strike = optionChain.Strikes.OrderByDescending(s => s)
             .Reverse()
             .First(s => s > price);
-        //TODO: придумать логику. И, возможно, сделать ее асинхронной.
-    }
 
+        return new LongStraddle { ExpirationDate = optionChain.ExpirationDate, Strike = strike };
+    }
+    public LongStraddle? HasStraddleInCollection(LongStraddle straddle) =>
+        LongStraddles.Find(ls => ls.ExpirationDate == straddle.ExpirationDate && ls.Strike == straddle.Strike);
     public void CloseStraddle(double price)
     { }
 }

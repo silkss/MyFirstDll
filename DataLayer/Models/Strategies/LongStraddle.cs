@@ -1,6 +1,7 @@
 ﻿using DataLayer.Enums;
 using DataLayer.Interfaces;
 using DataLayer.Models.Strategies;
+using System;
 
 namespace DataLayer.Models;
 
@@ -15,6 +16,9 @@ public class LongStraddle : IEntity
 
     #endregion
 
+    public DateTime ExpirationDate { get; set; }
+    public double Strike { get; set; }
     public StrategyLogic LongStraddleLogic { get; set; }
-
+    public void Start()
+    { }
 }

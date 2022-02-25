@@ -51,7 +51,10 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapGet("/api/mcapi", (string symbol, double price, string type, TraderWorker worker) =>
 {
-    worker.Signal(symbol, price, type); 
+    if (type == "OPEN")
+        worker.SignalOnOpen(symbol, price);
+    else if (type == "CLOSE")
+        worker.SignalOnClos(symbol, price);
 });
 
 app.Run();

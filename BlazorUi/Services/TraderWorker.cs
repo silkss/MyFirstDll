@@ -1,9 +1,18 @@
-﻿using DataLayer.Models.Strategies;
+﻿using Connectors.Interfaces;
+using DataLayer.Models;
+using DataLayer.Models.Instruments;
+using DataLayer.Models.Strategies;
 
 namespace BlazorUi.Services;
 
 public class TraderWorker
 {
+    private readonly IConnector<DbFuture, DbOption> _connector;
+
+    public TraderWorker(IConnector<DbFuture, DbOption> connector)
+    {
+        _connector = connector;
+    }
     public List<Container> WorkingContainers { get; } = new();
     public void StartContainer(Container item)
     {
@@ -26,18 +35,25 @@ public class TraderWorker
         WorkingContainers.Remove(item);
     }
 
-    public void Signal(string symbol, double price, string type)
+    public void SignalOnOpen(string symbol, double price)
     {
-        if (WorkingContainers.FirstOrDefault(c => c.Future.LocalSymbol == symbol) is Container container)
+        if (getContainer(symbol) is Container container)
         {
-            if (type == "OPEN")
+            var straddle = container.ChooseBestOptionChain(price);
+            if (container.HasStraddleInCollection(straddle) is LongStraddle collectionStraddle)
             {
-                container.OpenStraddle(price);
+                collectionStraddle.Start();
             }
-            else if (type == "CLOSE")
+            else
             {
-                container.CloseStraddle(price);
+                
             }
         }
     }
+
+    public void SignalOnClose(string symbol, double price)
+    { 
+    }
+
+    private Container? getContainer(string symbol) => WorkingContainers.FirstOrDefault(c => c.Future.Symbol == symbol);
 }

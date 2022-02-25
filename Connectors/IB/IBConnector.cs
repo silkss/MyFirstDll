@@ -26,7 +26,9 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
     private readonly EClientSocket ClientSocket;
 
     private readonly object _futureLock = new();
+    private readonly object _optionLock = new();
     private readonly Queue<(int, TFuture?)> _futureQueue = new();
+    private readonly Queue<(int, TOption?)> _optionQueue = new();
 
     public Action<int, TFuture> FutureAdded { get; set; } = delegate { };
     public Action<int, TOption> OptionAdded { get; set; } = delegate { };
@@ -90,7 +92,6 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         {
             ClientSocket.reqSecDefOptParams(future.ConId, future.Symbol, future.Echange, "FUT", future.ConId);
             ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
-            ClientSocket.reqHistoricalData(future.ConId, future.ToIbContract(), string.Empty, "1 M", "1 M", "TRADES", 1, 1, true, null);
         });
 
         CachedOptions.ForEach(option => ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null));
@@ -160,7 +161,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         {
             try
             {
-                lock (_futureLock)
+                lock (_optionLock)
                 {
                     while (!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
                     {
@@ -194,7 +195,34 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
+    public async Task<TOption?> RequestOptionAsync(DateTime LastTradeDate, double strike, OptionType type, TFuture parent)
+    {
+        if (!ClientSocket.IsConnected())
+            return default(TOption);
 
+        int req = RequestFuture(localSymbol);
+        TOption? option = default(TOption);
+        await Task.Run(() =>
+        {
+            try
+            {
+                lock (_optionQueue)
+                {
+                    while (!_optionQueue.TryPeek(out var tuple) && tuple.Item1 != req)
+                    {
+                        Monitor.Wait(_optionQueue);
+                    }
+                    (_, option) = _optionQueue.Dequeue();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                option = default(TOption);
+            }
+        });
+
+        return option;
+    }
     public override void contractDetails(int reqId, ContractDetails contractDetails)
     {
         if (contractDetails.Contract.SecType == "FUT")
@@ -236,11 +264,21 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
 
             if(CachedOptions.FirstOrDefault(co=> co.ConId == option.ConId) is TOption alreadycached)
             {
+                lock (_optionLock)
+                {
+                    _optionQueue.Enqueue((reqId, option));
+                    Monitor.Pulse(_optionLock);
+                }
                 OptionAdded?.Invoke(reqId, alreadycached);
             }
             else
             {
                 CacheOption(option);
+                lock (_optionLock)
+                {
+                    _optionQueue.Enqueue((reqId, option));
+                    Monitor.Pulse(_optionLock);
+                }
                 OptionAdded?.Invoke(reqId, option);
                 ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
                 ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
@@ -424,9 +462,15 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
             case 200:
                 lock(_futureLock)
                 {
-                    var tup = (id, default(TFuture));
-                    _futureQueue.Enqueue(tup);
+                    var fut_tup = (id, default(TFuture));
+                    _futureQueue.Enqueue(fut_tup);
                     Monitor.Pulse(_futureLock);
+                }
+                lock (_optionLock)
+                {
+                    var opt_tup = (id, default(TOption));
+                    _optionQueue.Enqueue(opt_tup);
+                    Monitor.Pulse(_optionLock);
                 }
                 break;
             default:
