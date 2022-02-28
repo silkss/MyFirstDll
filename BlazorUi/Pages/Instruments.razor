@@ -26,36 +26,47 @@ else
 }
 </div>
 
-
 <div class="row">
-@if (_futures == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Local symbol</th>
-                <th>Currency</th>
-                <th>Last Trade Date</th>
-                <th>Echange</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var future in _futures)
-        {
-            <tr>
-                <td>@future.LocalSymbol</td>
-                <td>@future.Currency</td>
-                <td>@future.LastTradeDate.ToShortDateString()</td>
-                <td>@future.Echange</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
+    <p><em>Instruments if Db</em></p>
+    @if (_futures == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Local symbol</th>
+                    <th>Currency</th>
+                    <th>Last Trade Date</th>
+                    <th>Echange</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var future in _futures)
+                {
+                    <tr>
+                        <td>@future.LocalSymbol</td>
+                        <td>@future.Currency</td>
+                        <td>@future.LastTradeDate.ToShortDateString()</td>
+                        <td>@future.Echange</td>
+                        <td>
+                            @if (FutureInCahce(future))
+                            {
+                                <p><em>Future cached in Connector</em></p>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success" @onclick="(() => _Connector.CacheFuture(future))">Add to cache</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>
 
 @code {
@@ -78,6 +89,10 @@ else
             _loadingFuture = false;
         }
     }
+
+
+    private bool FutureInCahce(DbFuture future) =>
+        _Connector.GetCachedFutures().Any(f => f.ConId == future.ConId);
 
     private async Task AddFuture()
     {

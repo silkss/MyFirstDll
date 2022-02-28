@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Instruments;
 
-public class DbFuture : IFuture, IEntity, IComparable
+public class DbFuture : IFuture, IEntity
 {
     [NotMapped]
     public List<OptionChain> OptionChain { get; } = new();
@@ -46,10 +46,6 @@ public class DbFuture : IFuture, IEntity, IComparable
 
     public event Action<TickType> InstrumentChanged = delegate { };
 
-    public int CompareTo(object? obj)
-    {
-        throw new NotImplementedException();
-    }
 
     public void Notify(TickType type, double price)
     {

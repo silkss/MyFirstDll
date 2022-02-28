@@ -200,7 +200,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         if (!ClientSocket.IsConnected())
             return default(TOption);
 
-        int req = RequestFuture(localSymbol);
+        int req = RequestOption(LastTradeDate, strike, type, parent);
         TOption? option = default(TOption);
         await Task.Run(() =>
         {
@@ -248,9 +248,6 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
                     Monitor.Pulse(_futureLock);
                 }
                 FutureAdded?.Invoke(reqId, future);
-
-                ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
-                ClientSocket.reqSecDefOptParams(future.ConId, future.Symbol, future.Echange, "FUT", future.ConId);
             }
             return;
         }
@@ -322,6 +319,8 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         if (future.ConId != default && !CachedFutures.Any(cf => cf.ConId == future.ConId))
         {
             CachedFutures.Add(future);
+            ClientSocket.reqSecDefOptParams(future.ConId, future.Symbol, future.Echange, "FUT", future.ConId);
+            ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
         }
     }
     public bool RemoveCachedOption(TOption option)

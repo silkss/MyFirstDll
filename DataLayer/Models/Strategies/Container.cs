@@ -43,14 +43,14 @@ public class Container : IEntity
         Started = false;
     }
 
-    public LongStraddle ChooseBestOptionChain(double price)
+    public LongStraddle? ChooseBestOptionChain(double price)
     {
         var optionChain = Future.OptionChain
             .OrderByDescending(oc => oc.ExpirationDate)
             .Reverse()
             .FirstOrDefault(oc => _period > (oc.ExpirationDate - DateTime.Now));
 
-        if (optionChain == null) return;
+        if (optionChain == null) return null;
 
         var strike = optionChain.Strikes.OrderByDescending(s => s)
             .Reverse()

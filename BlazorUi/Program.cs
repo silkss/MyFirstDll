@@ -30,7 +30,6 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 #region Scoped
 builder.Services.AddScoped<FutureRepository>();
-builder.Services.AddScoped<ContainersRepository>();
 builder.Services.AddScoped<OptionRepository>();
 #endregion
 
@@ -54,7 +53,7 @@ app.MapGet("/api/mcapi", (string symbol, double price, string type, TraderWorker
     if (type == "OPEN")
         worker.SignalOnOpen(symbol, price);
     else if (type == "CLOSE")
-        worker.SignalOnClos(symbol, price);
+        worker.SignalOnClose(symbol, price);
 });
 
 app.Run();
