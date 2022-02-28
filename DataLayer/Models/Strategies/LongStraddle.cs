@@ -1,5 +1,4 @@
-﻿using DataLayer.Enums;
-using DataLayer.Interfaces;
+﻿using DataLayer.Interfaces;
 using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
@@ -17,7 +16,11 @@ public class LongStraddle : IEntity
 
     public DateTime ExpirationDate { get; set; }
     public double Strike { get; set; }
-    public StrategyLogic LongStraddleLogic { get; set; }
-    public void Start()
-    { }
+    public void Work()
+    { 
+        foreach (var strategy in OptionStrategies)
+        {
+            strategy.Work();
+        }
+    }
 }

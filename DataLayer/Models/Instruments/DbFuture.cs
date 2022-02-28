@@ -2,7 +2,6 @@
 using Connectors.Interfaces;
 using Connectors.Models.Instruments;
 using DataLayer.Interfaces;
-using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -53,6 +52,10 @@ public class DbFuture : IFuture, IEntity
         {
             case TickType.LastPrice:
                 LastPrice = (decimal)price;
+                foreach (var straddle in Straddles)
+                {
+                    straddle.Work();
+                }
                 break;
             default:
                 break;

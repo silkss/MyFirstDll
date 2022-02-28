@@ -1,7 +1,7 @@
-﻿using Connectors.Enums;
-using Connectors.Interfaces;
-using DataLayer.Enums;
+﻿using Connectors.Interfaces;
+using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,8 +11,8 @@ public class OptionStrategy : BaseStrategy
 {
     #region DB
     #region Instrument
-    public int InstrumentId { get; set; }
-    public IOption Option { get; set; }
+    public int OptionId { get; set; }
+    public DbOption Option { get; set; }
     #endregion
     #region Straddle
     public LongStraddle LongStraddle { get; set; }
@@ -23,8 +23,28 @@ public class OptionStrategy : BaseStrategy
     public List<DbOrder> StrategyOrders { get; set; }
     #endregion
     #endregion
+    
+    public void Work()
+    {
+        switch (StrategyLogic)
+        {
+            case Enums.StrategyLogic.OpenPoition:
+                openPositionLogic();
+                break;
+            case Enums.StrategyLogic.ClosePostion:
+                break;
+            case Enums.StrategyLogic.Done:
+                break;
+        }
+    }
 
-    public int Volume { get; set; }
-    public Direction Direction { get; set; }
-    public StrategyLogic StrategyLogic { get; set; }
+    private void openPositionLogic()
+    {
+        if (Volume < Math.Abs(Position))
+        {
+            /*
+             * Need To send order!
+             */
+        }
+    }
 }

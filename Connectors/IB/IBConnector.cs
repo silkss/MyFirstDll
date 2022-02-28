@@ -382,7 +382,6 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
     #region MarketData
     public override void tickPrice(int tickerId, int field, double price, TickAttrib attribs)
     {
-        
         var type = GetTickTypeByField(field);
         if (!type.HasValue) return;
 
@@ -403,7 +402,6 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
                 return;
             }
         }
-        
     }
     public override void tickOptionComputation(int tickerId, int field, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
     {
