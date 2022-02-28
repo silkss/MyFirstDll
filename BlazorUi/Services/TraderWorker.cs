@@ -1,4 +1,6 @@
-﻿using Connectors.Interfaces;
+﻿using Connectors.Enums;
+using Connectors.Interfaces;
+using DataLayer.Enums;
 using DataLayer.Models;
 using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
@@ -8,52 +10,69 @@ namespace BlazorUi.Services;
 public class TraderWorker
 {
     private readonly IConnector<DbFuture, DbOption> _connector;
+    private TimeSpan _period = new(9, 0, 0, 0);
 
     public TraderWorker(IConnector<DbFuture, DbOption> connector)
     {
         _connector = connector;
     }
-    public List<Container> WorkingContainers { get; } = new();
-    public void StartContainer(Container item)
-    {
-        if (WorkingContainers.Contains(item) || item.Started)
-        {
-            return;
-        }
-        item.Start();
-        WorkingContainers.Add(item);
-    }
 
-    public void StopContainer(Container item)
+    public async void SignalOnOpen(string symbol, double price)
     {
-        if (!WorkingContainers.Contains(item))
-        {
-            item.Stop();
-            return;
-        }
-        item.Stop();
-        WorkingContainers.Remove(item);
-    }
+        var future = _connector.GetCachedFutures().FirstOrDefault(f => f.LocalSymbol == symbol);
+        if (future == null) return;
 
-    public void SignalOnOpen(string symbol, double price)
-    {
-        if (getContainer(symbol) is Container container)
+        var best_option_chain = future.OptionChain
+            .OrderByDescending(oc => oc.ExpirationDate)
+            .Reverse()
+            .FirstOrDefault(oc => oc.ExpirationDate > (DateTime.Now + _period));
+
+        if (best_option_chain == null) return;
+
+        var best_strike = best_option_chain.Strikes
+            .OrderByDescending(strike => strike)
+            .Reverse()
+            .FirstOrDefault(strike => strike >= price);
+
+        if (best_strike == default) return;
+
+        var straddle = future.Straddles
+            .FirstOrDefault(ls => ls.ExpirationDate == best_option_chain.ExpirationDate && ls.Strike == best_strike);
+
+        if (straddle == null)
         {
-            var straddle = container.ChooseBestOptionChain(price);
-            if (container.HasStraddleInCollection(straddle) is LongStraddle collectionStraddle)
+            var put = await _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Put, future);
+            var call = await _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Call, future);
+
+            if (put == null) return;
+            if (call == null) return;
+
+            var put_strategy = new OptionStrategy
             {
-                collectionStraddle.Start();
-            }
-            else
+                Direction = Direction.Buy,
+                Volume = 1,
+                Option = put,
+                StrategyLogic = StrategyLogic.OpenPoition,
+            };
+
+            var call_strategy = new OptionStrategy
             {
-                
-            }
+                Direction = Direction.Buy,
+                Volume = 1,
+                Option = call,
+                StrategyLogic = StrategyLogic.OpenPoition,
+            };
+
+            straddle = new LongStraddle();
+
+            straddle.OptionStrategies.Add(put_strategy);
+            straddle.OptionStrategies.Add(call_strategy);
+
+            future.Straddles.Add(straddle);
         }
     }
 
     public void SignalOnClose(string symbol, double price)
     { 
     }
-
-    private Container? getContainer(string symbol) => WorkingContainers.FirstOrDefault(c => c.Future.Symbol == symbol);
 }
