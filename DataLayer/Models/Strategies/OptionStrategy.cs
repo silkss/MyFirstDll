@@ -1,5 +1,4 @@
-﻿using Connectors.Interfaces;
-using DataLayer.Models.Instruments;
+﻿using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies.Base;
 using System;
 using System.Collections.Generic;
@@ -45,6 +44,11 @@ public class OptionStrategy : BaseStrategy
             /*
              * Need To send order!
              */
+
+            if (Option != null)
+            {
+                //Option.SendOrder(); ??
+            }
         }
     }
 }

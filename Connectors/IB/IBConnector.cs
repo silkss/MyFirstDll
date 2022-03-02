@@ -348,7 +348,6 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
             order.Id = nextOrderId++;
         }
 
-        logger.AddLog(LogType.Warm, $"Sending order with: price - {order.LmtPrice}");
         OpenOrders.Add(order);
         ClientSocket.placeOrder(order.Id, option.ToIbContract(), order.ToIbOrder());
     }

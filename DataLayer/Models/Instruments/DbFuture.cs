@@ -12,7 +12,6 @@ public class DbFuture : IFuture, IEntity
 {
     [NotMapped]
     public List<OptionChain> OptionChain { get; } = new();
-
     public int Id { get; set; }
     public int ConId { get; set; }
     public string LocalSymbol { get; set; }
@@ -43,8 +42,11 @@ public class DbFuture : IFuture, IEntity
     #endregion
     #endregion
 
-    public event Action<TickType> InstrumentChanged = delegate { };
-
+    private IConnector<DbFuture, DbOption>? _connector;
+    public void SetConnector(IConnector<DbFuture, DbOption> connector)
+    {
+        _connector = connector;
+    }
 
     public void Notify(TickType type, double price)
     {
