@@ -20,7 +20,7 @@ public class TraderWorker
         _logger = logger;
     }
 
-    public async Task SignalOnOpen(string symbol, double price)
+    public void SignalOnOpen(string symbol, double price)
     {
         var future = _connector.GetCachedFutures().FirstOrDefault(f => f.LocalSymbol == symbol);
         if (future == null)
@@ -49,7 +49,6 @@ public class TraderWorker
         {
             _logger.LogError($"cant find best strike more then {price}");
             return;
-
         }
 
         var straddle = future.Straddles
@@ -59,7 +58,7 @@ public class TraderWorker
         {
             _logger.LogInformation($"No straddle with exp:{best_option_chain.ExpirationDate.ToShortDateString()} and strike:{best_strike}");
 
-            var put = await _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Put, future);
+            var put =  _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Put, future);
             if (put == null)
             {
                 _logger.LogError("Impossible to request Put");
@@ -67,7 +66,7 @@ public class TraderWorker
             }
             _logger.LogInformation("Requested Put");
 
-            var call = await _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Call, future);
+            var call =  _connector.RequestOptionAsync(best_option_chain.ExpirationDate, best_strike, OptionType.Call, future);
             if (call == null)
             {
                 _logger.LogError("Impossible to request Call");

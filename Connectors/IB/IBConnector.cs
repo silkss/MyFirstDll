@@ -7,6 +7,7 @@ using IBApi;
 using System.Globalization;
 using Connectors.Utils;
 using Connectors.Models.Instruments;
+using System.Diagnostics;
 
 namespace Connectors.IB;
 
@@ -195,34 +196,34 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
-    public async Task<TOption?> RequestOptionAsync(DateTime LastTradeDate, double strike, OptionType type, TFuture parent)
+    public TOption? RequestOptionAsync(DateTime LastTradeDate, double strike, OptionType type, TFuture parent)
     {
         if (!ClientSocket.IsConnected())
             return default(TOption);
 
         int req = RequestOption(LastTradeDate, strike, type, parent);
         TOption? option = default(TOption);
-        await Task.Run(() =>
+
+        try
         {
-            try
+            lock (_optionLock)
             {
-                lock (_optionQueue)
+                while (_optionQueue.Count == 0 || _optionQueue.Peek().Item1 != req)
                 {
-                    while (!_optionQueue.TryPeek(out var tuple) && tuple.Item1 != req)
-                    {
-                        Monitor.Wait(_optionQueue);
-                    }
-                    (_, option) = _optionQueue.Dequeue();
+                    Debug.WriteLine("Wait for monitor");
+                    Monitor.Wait(_optionLock);
                 }
+                (_, option) = _optionQueue.Dequeue();
             }
-            catch (InvalidOperationException)
-            {
-                option = default(TOption);
-            }
-        });
+        }
+        catch (InvalidOperationException)
+        {
+            option = default(TOption);
+        }
 
         return option;
     }
+
     public override void contractDetails(int reqId, ContractDetails contractDetails)
     {
         if (contractDetails.Contract.SecType == "FUT")
@@ -264,7 +265,9 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
                 lock (_optionLock)
                 {
                     _optionQueue.Enqueue((reqId, option));
-                    Monitor.Pulse(_optionLock);
+                    Debug.WriteLine("Добавил в очередь всякого.");
+                    Monitor.PulseAll(_optionLock);
+                    Debug.WriteLine("Маякнул об добавлении");
                 }
                 OptionAdded?.Invoke(reqId, alreadycached);
             }
@@ -274,7 +277,9 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
                 lock (_optionLock)
                 {
                     _optionQueue.Enqueue((reqId, option));
-                    Monitor.Pulse(_optionLock);
+                    Debug.WriteLine("Добавил в очередь всякого.");
+                    Monitor.PulseAll(_optionLock);
+                    Debug.WriteLine("Маякнул об добавлении");
                 }
                 OptionAdded?.Invoke(reqId, option);
                 ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
