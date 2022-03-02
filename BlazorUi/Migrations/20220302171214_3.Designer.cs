@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorUi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220228143809_Rmove Containes from DB.")]
-    partial class RmoveContainesfromDB
+    [Migration("20220302171214_3")]
+    partial class _3
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -90,7 +90,7 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FutureId")
+                    b.Property<int?>("FutureId")
                         .HasColumnType("int");
 
                     b.Property<int>("InstumentType")
@@ -133,7 +133,7 @@ namespace BlazorUi.Migrations
 
                     b.HasIndex("FutureId");
 
-                    b.ToTable("Options");
+                    b.ToTable("DbOption");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
@@ -144,14 +144,11 @@ namespace BlazorUi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("ContainerId")
+                    b.Property<int?>("ContainerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("LongStraddleLogic")
-                        .HasColumnType("int");
 
                     b.Property<double>("Strike")
                         .HasColumnType("float");
@@ -160,7 +157,7 @@ namespace BlazorUi.Migrations
 
                     b.HasIndex("ContainerId");
 
-                    b.ToTable("LongStraddle");
+                    b.ToTable("Straddles");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
@@ -175,23 +172,56 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FutureId")
+                    b.Property<int?>("FutureId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FutureId");
 
-                    b.ToTable("Container");
+                    b.ToTable("Containers");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LongStraddleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OptionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StrategyLogic")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Volume")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LongStraddleId");
+
+                    b.HasIndex("OptionId");
+
+                    b.ToTable("OptionStrategy");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany("Options")
-                        .HasForeignKey("FutureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("FutureId");
 
                     b.Navigation("Future");
                 });
@@ -200,9 +230,7 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.Strategies.Container", "Container")
                         .WithMany("LongStraddles")
-                        .HasForeignKey("ContainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ContainerId");
 
                     b.Navigation("Container");
                 });
@@ -211,18 +239,34 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
                         .WithMany("Containers")
-                        .HasForeignKey("FutureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FutureId");
 
                     b.Navigation("Future");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
+                {
+                    b.HasOne("DataLayer.Models.LongStraddle", "LongStraddle")
+                        .WithMany("OptionStrategies")
+                        .HasForeignKey("LongStraddleId");
+
+                    b.HasOne("DataLayer.Models.Instruments.DbOption", "Option")
+                        .WithMany()
+                        .HasForeignKey("OptionId");
+
+                    b.Navigation("LongStraddle");
+
+                    b.Navigation("Option");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Instruments.DbFuture", b =>
                 {
                     b.Navigation("Containers");
+                });
 
-                    b.Navigation("Options");
+            modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
+                {
+                    b.Navigation("OptionStrategies");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>

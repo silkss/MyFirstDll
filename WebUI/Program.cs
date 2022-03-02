@@ -12,7 +12,7 @@ using Microsoft.Extensions.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<IConnector<DbFuture, DbOption>, IBConnector<DbFuture, DbOption>>();
+builder.Services.AddSingleton<IConnector, IBConnector>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>

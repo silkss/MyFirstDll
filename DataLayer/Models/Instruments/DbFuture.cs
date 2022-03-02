@@ -2,6 +2,7 @@
 using Connectors.Interfaces;
 using Connectors.Models.Instruments;
 using DataLayer.Interfaces;
+using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,30 +35,16 @@ public class DbFuture : IFuture, IEntity
     public decimal TheorPrice { get; set; }
 
     #region Db references
-    #region Straddles
-    public List<LongStraddle> Straddles { get; set; } = new();
-    #endregion
-    #region Options
-    public List<DbOption> Options { get; set; } = new();
-    #endregion
+    public List<Container> Containers { get; set; } = new();
+    //public List<DbOption> Options { get; set; } = new();
     #endregion
 
-    private IConnector<DbFuture, DbOption>? _connector;
-    public void SetConnector(IConnector<DbFuture, DbOption> connector)
-    {
-        _connector = connector;
-    }
 
     public void Notify(TickType type, double price)
     {
         switch (type)
         {
             case TickType.LastPrice:
-                LastPrice = (decimal)price;
-                foreach (var straddle in Straddles)
-                {
-                    straddle.Work();
-                }
                 break;
             default:
                 break;

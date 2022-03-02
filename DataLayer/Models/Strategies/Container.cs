@@ -1,7 +1,4 @@
-﻿using Connectors.Enums;
-using Connectors.Interfaces;
-using Connectors.Models.Instruments;
-using DataLayer.Interfaces;
+﻿using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using System;
 using System.Collections.Generic;
@@ -21,12 +18,11 @@ public class Container : IEntity
 
     #region  DbReference
     #region Future
-    public int FutureId { get; set; }
+    public int? FutureId { get; set; }
     public DbFuture Future { get; set; }
+
     #endregion
-
-    public List<LongStraddle> LongStraddles { get; set; } = new();
-
+    public List<LongStraddle>? LongStraddles { get; set; }
     #endregion
 
     [NotMapped]

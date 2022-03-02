@@ -14,7 +14,7 @@ public interface IInstrument
     public int MarketRule { get; set; }
     public DateTime LastTradeDate { get; set; }
     InstumentType InstumentType { get; set; }
-    public event Action<TickType> InstrumentChanged;
+    //public event Action<TickType> InstrumentChanged;
     public void Notify(TickType type, double price);
 
     decimal Bid { get; set; }

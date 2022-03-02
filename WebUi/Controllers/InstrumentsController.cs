@@ -7,9 +7,9 @@ namespace WebUi.Controllers
     public class InstrumentsController : Controller
     {
         private readonly DataContext _dataContext;
-        private readonly IConnector<DbFuture, DbOption> _connector;
+        private readonly IConnector _connector;
 
-        public InstrumentsController(DataContext dataContext, IConnector<DbFuture, DbOption> connector)
+        public InstrumentsController(DataContext dataContext, IConnector connector)
         {
             _dataContext = dataContext;
             _connector = connector;
@@ -24,15 +24,16 @@ namespace WebUi.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFuture(string localSymbol)
         {
-            var fut = await _connector.RequestFutureAsync(localSymbol);
-            if (fut != null)
-            {
-                if ( (await _dataContext.Futures.FirstOrDefaultAsync(f => f.ConId == fut.ConId)) is null)
-                {
-                    _dataContext.Futures.Add(fut);
-                    _dataContext.SaveChanges();
-                }
-            }
+            //var fut = new DbFuture();
+            //if (_connector.RequestFuture(fut))
+            //{
+            //    if ((await _dataContext.Futures.FirstOrDefaultAsync(f => f.ConId == fut.ConId)) is null)
+            //    {
+            //        _dataContext.Futures.Add(fut);
+            //        _dataContext.SaveChanges();
+            //    }
+
+            //}
             return Ok();
         }
     }

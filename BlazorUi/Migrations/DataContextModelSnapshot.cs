@@ -88,7 +88,7 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("FutureId")
+                    b.Property<int?>("FutureId")
                         .HasColumnType("int");
 
                     b.Property<int>("InstumentType")
@@ -131,7 +131,7 @@ namespace BlazorUi.Migrations
 
                     b.HasIndex("FutureId");
 
-                    b.ToTable("Options");
+                    b.ToTable("DbOption");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
@@ -142,7 +142,7 @@ namespace BlazorUi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("DbFutureId")
+                    b.Property<int?>("ContainerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpirationDate")
@@ -153,9 +153,31 @@ namespace BlazorUi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DbFutureId");
+                    b.HasIndex("ContainerId");
 
                     b.ToTable("Straddles");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Account")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("FutureId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FutureId");
+
+                    b.ToTable("Containers");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
@@ -169,10 +191,10 @@ namespace BlazorUi.Migrations
                     b.Property<int>("Direction")
                         .HasColumnType("int");
 
-                    b.Property<int>("LongStraddleId")
+                    b.Property<int?>("LongStraddleId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OptionId")
+                    b.Property<int?>("OptionId")
                         .HasColumnType("int");
 
                     b.Property<int>("Position")
@@ -190,40 +212,45 @@ namespace BlazorUi.Migrations
 
                     b.HasIndex("OptionId");
 
-                    b.ToTable("OptionStrategies");
+                    b.ToTable("OptionStrategy");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany("Options")
-                        .HasForeignKey("FutureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("FutureId");
 
                     b.Navigation("Future");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
                 {
-                    b.HasOne("DataLayer.Models.Instruments.DbFuture", null)
-                        .WithMany("Straddles")
-                        .HasForeignKey("DbFutureId");
+                    b.HasOne("DataLayer.Models.Strategies.Container", "Container")
+                        .WithMany("LongStraddles")
+                        .HasForeignKey("ContainerId");
+
+                    b.Navigation("Container");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
+                {
+                    b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
+                        .WithMany("Containers")
+                        .HasForeignKey("FutureId");
+
+                    b.Navigation("Future");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
                 {
                     b.HasOne("DataLayer.Models.LongStraddle", "LongStraddle")
                         .WithMany("OptionStrategies")
-                        .HasForeignKey("LongStraddleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LongStraddleId");
 
                     b.HasOne("DataLayer.Models.Instruments.DbOption", "Option")
                         .WithMany()
-                        .HasForeignKey("OptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OptionId");
 
                     b.Navigation("LongStraddle");
 
@@ -232,14 +259,17 @@ namespace BlazorUi.Migrations
 
             modelBuilder.Entity("DataLayer.Models.Instruments.DbFuture", b =>
                 {
-                    b.Navigation("Options");
-
-                    b.Navigation("Straddles");
+                    b.Navigation("Containers");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
                 {
                     b.Navigation("OptionStrategies");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
+                {
+                    b.Navigation("LongStraddles");
                 });
 #pragma warning restore 612, 618
         }

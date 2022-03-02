@@ -4,7 +4,7 @@
 @page "/instruments"
 
 @inject FutureRepository _FutureRepository
-@inject IConnector<DbFuture, DbOption> _Connector
+@inject IConnector _Connector
 
 <h3>Instruments</h3>
 
@@ -101,10 +101,10 @@ else
         try
         {
             _loadingFuture = true;
-            var fut = await _Connector.RequestFutureAsync(_localSymbol);
-            if (fut != null)
+            var fut = new DbFuture { LocalSymbol = _localSymbol };
+            if (_Connector.TryRequestFuture(fut))
             {
-                if (_futures == null) 
+                if (_futures == null)
                     _futures = new List<DbFuture>();
 
                 if (await _FutureRepository.CreateAsync(fut))

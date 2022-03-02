@@ -11,9 +11,7 @@ using System.Diagnostics;
 
 namespace Connectors.IB;
 
-public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture, TOption>
-    where TFuture : IFuture, new()
-    where TOption : IOption, new()
+public class IBConnector : DefaultEWrapper, IConnector
 {
     private string ip;
     private int port;
@@ -28,11 +26,11 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
 
     private readonly object _futureLock = new();
     private readonly object _optionLock = new();
-    private readonly Queue<(int, TFuture?)> _futureQueue = new();
-    private readonly Queue<(int, TOption?)> _optionQueue = new();
+    private readonly Queue<(int, ContractDetails?)> _futureQueue = new();
+    private readonly Queue<(int, ContractDetails?)> _optionQueue = new();
 
-    public Action<int, TFuture> FutureAdded { get; set; } = delegate { };
-    public Action<int, TOption> OptionAdded { get; set; } = delegate { };
+    public Action<int, IFuture> FutureAdded { get; set; } = delegate { };
+    public Action<int, IOption> OptionAdded { get; set; } = delegate { };
 
     public bool IsConnected
     {
@@ -129,14 +127,14 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
     #endregion
 
     #region Instruments
-    private readonly List<TFuture> CachedFutures = new();
-    private readonly List<TOption> CachedOptions = new();
+    private readonly List<IFuture> CachedFutures = new();
+    private readonly List<IOption> CachedOptions = new();
     private readonly List<string> AccountList;
     private readonly List<GotOrder> OpenOrders;
     private readonly List<int> instrumentreqlist = new();
     public IEnumerable<string> GetAccountList() => AccountList;
-    public IEnumerable<TFuture> GetCachedFutures() => CachedFutures;
-    public IEnumerable<TOption> GetCachedOptions() => CachedOptions;
+    public IEnumerable<IFuture> GetCachedFutures() => CachedFutures;
+    public IEnumerable<IOption> GetCachedOptions() => CachedOptions;
 
     public int RequestFuture(string localSymbol)
     {
@@ -151,35 +149,48 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
-    public async Task<TFuture?> RequestFutureAsync(string localSymbol)
+    public bool TryRequestFuture(IFuture future)
     {
         if (!ClientSocket.IsConnected())
-            return default(TFuture);
+            return false;
 
-        int req = RequestFuture(localSymbol);
-        TFuture? future = default(TFuture);
-        await Task.Run(() =>
+        int req = RequestFuture(future.LocalSymbol);
+
+        ContractDetails? contractDetails = null;
+        try
         {
-            try
+            lock (_futureLock)
             {
-                lock (_optionLock)
+                while (!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
                 {
-                    while (!_futureQueue.TryPeek(out var tuple) && tuple.Item1 != req)
-                    {
-                        Monitor.Wait(_futureLock);
-                    }
-                    (_, future) = _futureQueue.Dequeue();
+                    Monitor.Wait(_futureLock);
                 }
+                contractDetails = _futureQueue.Dequeue().Item2;
             }
-            catch (InvalidOperationException)
-            {
-                future = default(TFuture);
-            }
-        });
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
 
-        return future;
+        if (contractDetails == null)
+            return false;
+
+        future.MinTick = Convert.ToDecimal(contractDetails.MinTick);
+        future.ConId = contractDetails.Contract.ConId;
+        future.LocalSymbol = contractDetails.Contract.LocalSymbol;
+        future.Symbol = contractDetails.Contract.Symbol;
+        future.Echange = contractDetails.Contract.Exchange;
+        future.Currency = contractDetails.Contract.Currency;
+        future.Multiplier = int.Parse(contractDetails.Contract.Multiplier);
+        future.LastTradeDate = DateTime.ParseExact(contractDetails.Contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture);
+        future.InstumentType = InstumentType.Future;
+
+        CacheFuture(future);
+
+        return true;
     }
-    public int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, TFuture parent)
+    public int RequestOption(DateTime LastTradeDate, decimal Strike, OptionType type, IFuture parent)
     {
         var contract = new Contract()
         {
@@ -188,7 +199,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
             Exchange = parent.Echange,
             Currency = parent.Currency,
             LastTradeDateOrContractMonth = LastTradeDate.ToString("yyyyMMdd"),
-            Strike = Strike,
+            Strike = Convert.ToDouble(Strike),
             Right = type == OptionType.Call ? "C" : "P",
             Multiplier = parent.Multiplier.ToString()
         };
@@ -196,95 +207,80 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
-    public TOption? RequestOptionAsync(DateTime LastTradeDate, double strike, OptionType type, TFuture parent)
+    /// <summary>
+    /// For this method you need 
+    /// DateTime LastTradeDate, double strike, OptionType type, IFuture parent)
+    /// </summary>
+    /// <param name="option"></param>
+    /// <returns></returns>
+    public bool TryRequestOption(IOption option, IFuture parent)
     {
+        if (option == null) return false;
+
         if (!ClientSocket.IsConnected())
-            return default(TOption);
+            return false;
 
-        int req = RequestOption(LastTradeDate, strike, type, parent);
-        TOption? option = default(TOption);
-
+        int req = RequestOption(option.LastTradeDate, option.Strike, option.OptionType, parent);
+        ContractDetails? contractDetails = null;
         try
         {
             lock (_optionLock)
             {
                 while (_optionQueue.Count == 0 || _optionQueue.Peek().Item1 != req)
                 {
-                    Debug.WriteLine("Wait for monitor");
                     Monitor.Wait(_optionLock);
                 }
-                (_, option) = _optionQueue.Dequeue();
+                contractDetails = _optionQueue.Dequeue().Item2;
             }
         }
         catch (InvalidOperationException)
         {
-            option = default(TOption);
+            return false;
         }
 
-        return option;
+        if (contractDetails == null) return false;
+
+        option.MinTick = Convert.ToDecimal(contractDetails.MinTick);
+        option.UnderlyingId = contractDetails.UnderConId;
+        option.MarketRule = int.Parse(contractDetails.MarketRuleIds);
+
+        option.ConId = contractDetails.Contract.ConId;
+        option.LocalSymbol = contractDetails.Contract.LocalSymbol;
+        option.Symbol = contractDetails.Contract.Symbol;
+        option.Echange = contractDetails.Contract.Exchange;
+        option.Currency = contractDetails.Contract.Currency;
+        option.Multiplier = int.Parse(contractDetails.Contract.Multiplier);
+        option.LastTradeDate = DateTime.ParseExact(contractDetails.Contract.LastTradeDateOrContractMonth, "yyyyMMdd", CultureInfo.CurrentCulture);
+        option.InstumentType = InstumentType.Option;
+        option.OptionType = contractDetails.Contract.Right == "C" ? OptionType.Call : OptionType.Put;
+        option.Strike = (Decimal)contractDetails.Contract.Strike;
+        option.TradingClass = contractDetails.Contract.TradingClass;
+
+        ClientSocket.reqMktData(contractDetails.Contract.ConId, contractDetails.Contract, string.Empty, false, false, null);
+        ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
+
+        return true;
     }
 
     public override void contractDetails(int reqId, ContractDetails contractDetails)
     {
         if (contractDetails.Contract.SecType == "FUT")
         {
-            var future = contractDetails.Contract.ToFuture(new TFuture());
-            future.MinTick = Convert.ToDecimal(contractDetails.MinTick);
-
-            if (CachedFutures.FirstOrDefault(cf => cf.ConId == future.ConId) is TFuture alreadycached)
+            lock (_futureLock)
             {
-                lock(_futureLock)
-                {
-                    _futureQueue.Enqueue((reqId, alreadycached));
-                    Monitor.Pulse(_futureLock);
-                }
-                FutureAdded?.Invoke(reqId, alreadycached);
+                _futureQueue.Enqueue((reqId, contractDetails));
+                Monitor.Pulse(_futureLock);
             }
-            else
-            {
-                CacheFuture(future);
-                lock (_futureLock)
-                {
-                    _futureQueue.Enqueue((reqId, future));
-                    Monitor.Pulse(_futureLock);
-                }
-                FutureAdded?.Invoke(reqId, future);
-            }
-            return;
         }
 
         if (contractDetails.Contract.SecType == "FOP")
         {
-            var option = contractDetails.Contract.ToOption(new TOption());
-            option.MinTick = Convert.ToDecimal(contractDetails.MinTick);
-            option.UnderlyingId = contractDetails.UnderConId;
-            option.MarketRule = int.Parse(contractDetails.MarketRuleIds);
+            lock (_optionLock)
+            {
+                _optionQueue.Enqueue((reqId, contractDetails));
+                Monitor.PulseAll(_optionLock);
+            }
 
-            if(CachedOptions.FirstOrDefault(co=> co.ConId == option.ConId) is TOption alreadycached)
-            {
-                lock (_optionLock)
-                {
-                    _optionQueue.Enqueue((reqId, option));
-                    Debug.WriteLine("Добавил в очередь всякого.");
-                    Monitor.PulseAll(_optionLock);
-                    Debug.WriteLine("Маякнул об добавлении");
-                }
-                OptionAdded?.Invoke(reqId, alreadycached);
-            }
-            else
-            {
-                CacheOption(option);
-                lock (_optionLock)
-                {
-                    _optionQueue.Enqueue((reqId, option));
-                    Debug.WriteLine("Добавил в очередь всякого.");
-                    Monitor.PulseAll(_optionLock);
-                    Debug.WriteLine("Маякнул об добавлении");
-                }
-                OptionAdded?.Invoke(reqId, option);
-                ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
-                ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
-            }
             return;
         }
     }
@@ -304,14 +300,14 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
     }
 
     #region Add and Remove Instrument from Cache
-    public void CacheOption(TOption option)
+    public void CacheOption(IOption option)
     {
         if (option.ConId != default && !CachedOptions.Any(co => co.ConId == option.ConId))
         {
             CachedOptions.Add(option);
         }
     }
-    public bool RemoveCachedFuture(TFuture future)
+    public bool RemoveCachedFuture(IFuture future)
     {
         if (CachedFutures.Contains(future))
         {
@@ -319,7 +315,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
         }
         return false;
     }
-    public void CacheFuture(TFuture future)
+    public void CacheFuture(IFuture future)
     {
         if (future.ConId != default && !CachedFutures.Any(cf => cf.ConId == future.ConId))
         {
@@ -328,7 +324,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
             ClientSocket.reqMktData(future.ConId, future.ToIbContract(), string.Empty, false, false, null);
         }
     }
-    public bool RemoveCachedOption(TOption option)
+    public bool RemoveCachedOption(IOption option)
     {
         if (CachedOptions.Contains(option))
         {
@@ -341,7 +337,7 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
     #endregion
 
     #region Orders 
-    public void SendOptionOrder(GotOrder order, TOption option)
+    public void SendOptionOrder(GotOrder order, IOption option)
     {
         if (order.Id == -1)
         {
@@ -461,15 +457,16 @@ public class IBConnector<TFuture, TOption> : DefaultEWrapper, IConnector<TFuture
                 }
                 break;
             case 200:
+                ContractDetails? contractDetails = null;
                 lock(_futureLock)
                 {
-                    var fut_tup = (id, default(TFuture));
+                    var fut_tup = (id, contractDetails);
                     _futureQueue.Enqueue(fut_tup);
                     Monitor.Pulse(_futureLock);
                 }
                 lock (_optionLock)
                 {
-                    var opt_tup = (id, default(TOption));
+                    var opt_tup = (id, contractDetails);
                     _optionQueue.Enqueue(opt_tup);
                     Monitor.Pulse(_optionLock);
                 }

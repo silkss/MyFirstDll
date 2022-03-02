@@ -13,7 +13,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 #region Singletons
-builder.Services.AddSingleton<IConnector<DbFuture, DbOption>, IBConnector<DbFuture, DbOption>>();
+builder.Services.AddSingleton<IConnector, IBConnector>();
 builder.Services.AddSingleton<TraderWorker>();
 builder.Services.AddSingleton<WeatherForecastService>();
 #endregion

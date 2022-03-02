@@ -5,8 +5,8 @@ namespace WebUi.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly IConnector<DbFuture, DbOption> _Connector;
-    public HomeController(IConnector<DbFuture, DbOption> connector)
+    private readonly IConnector _Connector;
+    public HomeController(IConnector connector)
     {
         _Connector = connector;
     }

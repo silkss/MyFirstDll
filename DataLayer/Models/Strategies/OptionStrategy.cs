@@ -10,12 +10,13 @@ public class OptionStrategy : BaseStrategy
 {
     #region DB
     #region Instrument
-    public int OptionId { get; set; }
+    public int? OptionId { get; set; }
     public DbOption Option { get; set; }
     #endregion
     #region Straddle
+    public int? LongStraddleId { get; set; }
+
     public LongStraddle LongStraddle { get; set; }
-    public int LongStraddleId { get; set; }
     #endregion
     #region Orders
     [NotMapped]

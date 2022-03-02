@@ -8,9 +8,9 @@ namespace DataLayer;
 public class DataContext : DbContext
 {
     public DbSet<DbFuture> Futures { get; set; }
-    public DbSet<DbOption> Options { get; set; }
+    public DbSet<Container> Containers { get; set; }
     public DbSet<LongStraddle> Straddles { get; set; }
-    public DbSet<OptionStrategy> OptionStrategies { get; set; }
+    //public DbSet<OptionStrategy> OptionStrategies { get; set; }
 
     //public DbSet<LongStraddle> LongStraddles { get; set; }
     //public DbSet<OptionStrategy> OptionStrategies { get; set; }
