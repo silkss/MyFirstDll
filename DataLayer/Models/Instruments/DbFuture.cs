@@ -36,19 +36,16 @@ public class DbFuture : IFuture, IEntity
 
     #region Db references
     public List<Container> Containers { get; set; } = new();
+
+    public event Action<TickType, double> Tick = delegate { };
+
     //public List<DbOption> Options { get; set; } = new();
     #endregion
 
-
     public void Notify(TickType type, double price)
     {
-        switch (type)
-        {
-            case TickType.LastPrice:
-                break;
-            default:
-                break;
-        }
+        var action = Tick;
+        action?.Invoke(type, price);
     }
 
 }

@@ -6,6 +6,7 @@
 
 @inject ContainersRepository _ContainersRepository
 @inject IConnector _Connector
+@inject TraderWorker _TradeWorker
 
 <div class="row">
     <p><em>Instruments if Db</em></p>
@@ -31,11 +32,11 @@
                         <td>@container.Account</td>
                         @if (container.Started)
                         {
-                            <td><button class="btn btn-danger">Stop</button></td>
+                            <td><button class="btn btn-danger" >Stop</button></td>
                         }
                         else
                         {
-                            <td><button class="btn btn-success">Start</button></td>
+                            <td><button class="btn btn-success" @onclick="(() => startContainer(container))">Start</button></td>
                         }
                     </tr>
                 }
@@ -57,11 +58,23 @@
             _loadingContainers = true;
             _containers = await _ContainersRepository.GetAllAsync();
             if (_containers == null)
-            _containers = new List<Container>();
+                _containers = new List<Container>();
         }
         finally
         {
             _loadingContainers = false;
         }
-	}
+    }
+
+    private void startContainer(Container container)
+    {
+        if (container.Future == null) return;
+
+        _TradeWorker.StartContainer(container);
+    }
+
+    private void stopContainer(Container container)
+    {
+        _TradeWorker.StopContainer(container);
+    }
 }

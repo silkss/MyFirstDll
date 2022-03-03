@@ -25,6 +25,12 @@ public abstract class BaseRepository<T>
     }
 
     protected abstract bool _Contains(DbSet<T> set, T entity);
+
+    /// <summary>
+    /// Есть базовая реализация, но в случае необходимости, например, для подгрузки связанных сущностей, 
+    /// сделал виртуальным. 
+    /// </summary>
+    /// <returns></returns>
     public virtual async Task<IList<T>> GetAllAsync() => await _dataContext.Set<T>().ToListAsync();
     public async Task<T?> GetByIdAsync(int id) => await _dataContext.Set<T>().FirstOrDefaultAsync(i => i.Id == id);
 }

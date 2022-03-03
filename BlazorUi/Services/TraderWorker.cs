@@ -8,11 +8,9 @@ public class TraderWorker
     private readonly IConnector _connector;
     private readonly ILogger<TraderWorker> _logger;
 
-    private readonly List<Container> _workingContainers;
+    private readonly List<Container> _workingContainers = new();
 
     private TimeSpan _period = new(9, 0, 0, 0);
-
-
 
     public TraderWorker(IConnector connector, ILogger<TraderWorker> logger)
     {
@@ -20,15 +18,23 @@ public class TraderWorker
         _logger = logger;
     }
 
-    public bool AddContainerToWork(Container container)
+    public void StartContainer(Container container)
     {
-        if (_workingContainers.Contains(container))
-            return true;
-        else
+        if (!_workingContainers.Contains(container))
         {
             _workingContainers.Add(container);
-            return true;
         }
+        _connector.CacheFuture(container.Future);
+        container.Start();
+    }
+
+    public void StopContainer(Container container)
+    {
+        if (_workingContainers.Contains(container))
+        {
+            _workingContainers.Remove(container);
+        }
+        container.Stop();
     }
 
     public void SignalOnOpen(string symbol, double price)
