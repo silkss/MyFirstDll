@@ -21,7 +21,6 @@ public class Container : IEntity
     #endregion
 
     #region  DbReference
-
     public int Id { get; set; }
 
     #region Future
@@ -77,8 +76,9 @@ public class Container : IEntity
 
         return new LongStraddle { ExpirationDate = optionChain.ExpirationDate, Strike = strike };
     }
-    public LongStraddle? HasStraddleInCollection(LongStraddle straddle) =>
-        LongStraddles?.Find(ls => ls.ExpirationDate == straddle.ExpirationDate && ls.Strike == straddle.Strike);
+    public LongStraddle? HasStraddleInCollection(DateTime expirationdate, double price) =>
+        LongStraddles?.Find(ls => ls.ExpirationDate == expirationdate && ls.Strike == price);
+
     public void CloseStraddle(double price)
     { }
     #endregion

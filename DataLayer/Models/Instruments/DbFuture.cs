@@ -39,7 +39,7 @@ public class DbFuture : IFuture, IEntity
 
     public event Action<TickType, double> Tick = delegate { };
 
-    //public List<DbOption> Options { get; set; } = new();
+    public List<DbOption> Options { get; set; } = new();
     #endregion
 
     public void Notify(TickType type, double price)

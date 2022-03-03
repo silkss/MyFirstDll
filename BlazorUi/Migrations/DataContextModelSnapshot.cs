@@ -218,7 +218,7 @@ namespace BlazorUi.Migrations
             modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany()
+                        .WithMany("Options")
                         .HasForeignKey("FutureId");
 
                     b.Navigation("Future");
@@ -260,6 +260,8 @@ namespace BlazorUi.Migrations
             modelBuilder.Entity("DataLayer.Models.Instruments.DbFuture", b =>
                 {
                     b.Navigation("Containers");
+
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>

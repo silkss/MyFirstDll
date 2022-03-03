@@ -1,7 +1,11 @@
-﻿using Connectors.Interfaces;
+﻿using Connectors.Enums;
+using Connectors.Interfaces;
 using Connectors.Models.Instruments;
+using DataLayer.Enums;
+using DataLayer.Models;
 using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorUi.Services;
 
@@ -58,7 +62,8 @@ public class TraderWorker
         container.Stop();
     }
 
-    public void SignalOnOpen(string symbol, double price, string account)
+    public async Task SignalOnOpenAsync(string symbol, double price, string account, 
+        ContainersRepository containersRepository, OptionRepository optionRepository)
     {
         if (_connector.IsConnected == false) return;
 
@@ -83,8 +88,62 @@ public class TraderWorker
             return;
         }
 
+        var straddle = container.HasStraddleInCollection(best_option_chain.ExpirationDate, best_strike);
+        if (straddle == null)
+        {
+            straddle = new LongStraddle
+            {
+                ExpirationDate = best_option_chain.ExpirationDate,
+                Strike = best_strike
+            };
 
-        _logger.LogInformation($"best option {best_option_chain.ExpirationDate} with best strike {best_strike}");
+            DbOption put = new()
+            {
+                LastTradeDate = best_option_chain.ExpirationDate,
+                Strike = (decimal)best_strike,
+                OptionType = OptionType.Put,
+                FutureId = container.Future.Id,
+            };
+
+            if (_connector.TryRequestOption(put, container.Future) == false)
+            {
+                _logger.LogError("Cant request Put");
+                return;
+            }
+
+            DbOption call = new()
+            {
+                LastTradeDate = best_option_chain.ExpirationDate,
+                Strike = (decimal)best_strike,
+                OptionType = OptionType.Call,
+                FutureId = container.Future.Id,
+            };
+
+            if (_connector.TryRequestOption(call, container.Future) == false)
+            {
+                _logger.LogError("cant requst Call");
+                return;
+            }
+
+            #region проверка на то, есть ли в базе данных опцион. Если да, то используем его
+            var db_put = optionRepository.GetOptionBuyConId(put.ConId);
+            if (db_put == null)
+                _ = await optionRepository.CreateAsync(put);
+            else
+                put = db_put;
+
+            var db_call = optionRepository.GetOptionBuyConId(call.ConId);
+            if (db_call == null)
+                _ = await optionRepository.CreateAsync(call);
+            else
+                call = db_call;
+            #endregion
+
+            straddle.CreatAndAddStrategy(put);
+            straddle.CreatAndAddStrategy(call);
+
+            //container.LongStraddles.Add(straddle);
+        }
     }
 
     public void SignalOnClose(string symbol, double price)

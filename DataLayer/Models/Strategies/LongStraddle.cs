@@ -1,4 +1,7 @@
-﻿using DataLayer.Interfaces;
+﻿using Connectors.Enums;
+using DataLayer.Enums;
+using DataLayer.Interfaces;
+using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
@@ -19,6 +22,9 @@ public class LongStraddle : IEntity
 
     #endregion
 
+    #region Methods 
+
+    #region PublicMethods
     public DateTime ExpirationDate { get; set; }
     public double Strike { get; set; }
     public void Work()
@@ -28,4 +34,22 @@ public class LongStraddle : IEntity
             strategy.Work();
         }
     }
+
+    public OptionStrategy CreatAndAddStrategy(DbOption option, int volume = 1)
+    {
+        var option_strategy = new OptionStrategy
+        {
+            Direction = Direction.Buy,
+            OptionId = option.Id,
+            Option = option,
+            Volume = volume,
+            StrategyLogic = StrategyLogic.OpenPoition
+        };
+
+        OptionStrategies.Add(option_strategy);
+        return option_strategy;
+    }
+    #endregion
+
+    #endregion
 }

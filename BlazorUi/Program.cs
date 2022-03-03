@@ -47,10 +47,12 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.MapGet("/api/mcapi", (string symbol, double price, string account, string type, TraderWorker worker) =>
+app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, 
+    TraderWorker worker, ContainersRepository containersRepository,
+    OptionRepository optionRepository) =>
 {
     if (type == "OPEN")
-        worker.SignalOnOpen(symbol, price, account);
+        await worker.SignalOnOpenAsync(symbol, price, account, containersRepository, optionRepository);
     else if (type == "CLOSE")
         worker.SignalOnClose(symbol, price);
 });
