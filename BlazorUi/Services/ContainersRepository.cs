@@ -11,7 +11,10 @@ public class ContainersRepository : BaseRepository<Container>
     {
 
     }
-
+    public override async Task<IList<Container>> GetAllAsync() => await _dataContext
+        .Containers
+        .Include(container => container.Future)
+        .ToListAsync();
     protected override bool _Contains(DbSet<Container> set, Container entity) =>
         set.Any(c => c.Account == entity.Account && c.Future.LocalSymbol == entity.Future.LocalSymbol);
 }
