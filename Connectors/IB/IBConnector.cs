@@ -1,5 +1,4 @@
 ﻿using Connectors.Enums;
-using Connectors.Extensions;
 using Connectors.IB.Enums;
 using Connectors.Interfaces;
 using Connectors.Orders;
@@ -7,7 +6,6 @@ using IBApi;
 using System.Globalization;
 using Connectors.Utils;
 using Connectors.Models.Instruments;
-using System.Diagnostics;
 
 namespace Connectors.IB;
 
@@ -207,6 +205,7 @@ public class IBConnector : DefaultEWrapper, IConnector
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
+
     /// <summary>
     /// For this method you need 
     /// DateTime LastTradeDate, double strike, OptionType type, IFuture parent)

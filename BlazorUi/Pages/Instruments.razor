@@ -1,9 +1,9 @@
-﻿@using BlazorUi.Services
-@using Connectors.Interfaces
+﻿@using Connectors.Interfaces
 
 @page "/instruments"
 
 @inject FutureRepository _FutureRepository
+@inject ContainersRepository _ContainersRepository
 @inject IConnector _Connector
 
 <h3>Instruments</h3>
@@ -13,7 +13,7 @@
 {
     <div class="col">
         <input placeholder="type instrument local symbol" @bind="_localSymbol"/>
-    </div>    
+    </div>
     <div class="col">
         <button class="btn btn-success" @onclick="AddFuture">Add</button>
     </div>
@@ -52,27 +52,58 @@ else
                         <td>@future.Currency</td>
                         <td>@future.LastTradeDate.ToShortDateString()</td>
                         <td>@future.Echange</td>
-                        <td>
-                            @if (FutureInCahce(future))
-                            {
-                                <p><em>Future cached in Connector</em></p>
-                            }
-                            else
-                            {
-                                <button class="btn btn-success" @onclick="(() => _Connector.CacheFuture(future))">Add to cache</button>
-                            }
-                        </td>
+                        <td><button class="btn btn-success" @onclick="(() => openModal(future))">Create container</button> </td>
                     </tr>
                 }
             </tbody>
         </table>
     }
+    @if (isAddContainer)
+    {
+        <div class="modal" tabindex="-1" style="display:block" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-header">Lets create some</h3>
+                        <button type="button" class="btn-close" @onclick="closeModal"/>
+                    </div>
+                    <div class="modal-body">
+                        <label class="col-form-label">Account</label>
+                        @if (_accounts == null)
+                        {
+                            <p><em>You need to connect first!</em></p>
+                        }
+                        else
+                        {
+                            <select class="form-control" @bind="newContainer.Account">
+                                <option value="">-- Select Account --</option>
+                                @foreach (var account in _accounts)
+                                {
+                                    <option value="@account">@account</option>
+                                }
+                            </select>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" @onclick="createContainer">Create</button>
+                        <button class="btn btn-danger" @onclick="cancelModel">Cancel</button>"
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     private IList<DbFuture>? _futures;
+    private IEnumerable<string> _accounts;
+
     private string? _localSymbol;
     private bool _loadingFuture;
+
+    private Container? newContainer;
+
+    private bool isAddContainer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,7 +120,6 @@ else
             _loadingFuture = false;
         }
     }
-
 
     private bool FutureInCahce(DbFuture future) =>
         _Connector.GetCachedFutures().Any(f => f.ConId == future.ConId);
@@ -118,4 +148,33 @@ else
         }
     }
 
+    private void closeModal()
+    {
+        isAddContainer = false;
+    }
+
+    private void openModal(DbFuture future)
+    {
+        _accounts = _Connector.GetAccountList();
+        newContainer = new();
+        newContainer.Future = future;
+        isAddContainer = true;
+    }
+
+    private void GetAccounts()
+    {
+        _accounts = _Connector.GetAccountList();
+    }
+    private async Task createContainer()
+    {
+        if (!isAddContainer) return;
+
+        await _ContainersRepository.CreateAsync(newContainer);
+        isAddContainer = false;
+    }
+    private void cancelModel()
+    {
+        newContainer = null;
+        isAddContainer = false;
+    }
 }

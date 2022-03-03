@@ -3,7 +3,6 @@ using BlazorUi.Services;
 using Connectors.IB;
 using Connectors.Interfaces;
 using DataLayer;
-using DataLayer.Models.Instruments;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +30,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 #region Scoped
 builder.Services.AddScoped<FutureRepository>();
 builder.Services.AddScoped<OptionRepository>();
+builder.Services.AddScoped<ContainersRepository>();
 #endregion
 
 var app = builder.Build();
@@ -40,7 +40,6 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
-
 
 app.UseStaticFiles();
 

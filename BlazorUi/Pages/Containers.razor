@@ -1,0 +1,59 @@
+﻿@page "/containers"
+
+@using Connectors.Interfaces
+
+<h3>Containers</h3>
+
+@inject ContainersRepository _ContainersRepository
+@inject IConnector _Connector
+
+<div class="row">
+    <p><em>Instruments if Db</em></p>
+    @if (_loadingContainers)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Local symbol</th>
+                    <th>Account</th>
+                    <th>Last Trade Date</th>
+                    <th>Echange</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var container in _containers)
+                {
+                    <tr>
+                        <td>@container.Future?.LocalSymbol</td>
+                        <td>@container.Account</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+	private bool _loadingContainers;
+    private IList<Container> _containers;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (_loadingContainers == true) return;
+		try
+        {
+             _loadingContainers = true;
+            _containers = await _ContainersRepository.GetAllAsync();
+            if (_containers == null)
+                _containers = new List<Container>();
+        }
+        finally
+        {
+            _loadingContainers = false;
+        }
+	}
+}
