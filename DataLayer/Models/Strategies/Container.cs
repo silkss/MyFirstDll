@@ -15,19 +15,21 @@ namespace DataLayer.Models.Strategies;
 public class Container : IEntity
 {
     #region Props
+
     #region Private props
     private TimeSpan _period = new(9, 0, 0, 0);
     #endregion
 
     #region  DbReference
 
+    public int Id { get; set; }
+
     #region Future
     public int? FutureId { get; set; }
     public DbFuture Future { get; set; }
     #endregion
-    public int Id { get; set; }
 
-    public List<LongStraddle>? LongStraddles { get; set; }
+    public List<LongStraddle> LongStraddles { get; set; } = new();
     #endregion
 
     #region Public props
@@ -36,6 +38,7 @@ public class Container : IEntity
     public bool Started { get; private set; }
     public string Account { get; set; }
     #endregion
+
     #endregion
 
     #region Methods
