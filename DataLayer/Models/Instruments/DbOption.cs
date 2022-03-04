@@ -1,4 +1,5 @@
 ﻿using Connectors.Enums;
+using Connectors.Helpers;
 using Connectors.Interfaces;
 using DataLayer.Interfaces;
 using DataLayer.Models.Strategies;
@@ -54,10 +55,25 @@ public class DbOption : IOption, IEntity
     #endregion
 
     #region Methods
+
     #region PublicMethods
     public void Notify(TickType type, double price)
     {
-        //throw new NotImplementedException();
+        switch (type)
+        {
+            case TickType.Bid:
+                Bid = (decimal)price;
+                break;
+            case TickType.Ask:
+                Ask = (decimal)price;
+                break;
+            case TickType.LastPrice:
+                LastPrice = (decimal)price;
+                break;
+            case TickType.TheorPrice:
+                TheorPrice = MathHelper.RoundUp((decimal)price, MinTick);
+                break;
+        }
     }
 
     public IOrder? SendOrder()
@@ -71,5 +87,6 @@ public class DbOption : IOption, IEntity
         _connector = connector;
     }
     #endregion
+
     #endregion 
 }

@@ -388,18 +388,18 @@ public class IBConnector : DefaultEWrapper, IConnector
         var type = GetTickTypeByField(field);
         if (!type.HasValue) return;
 
-        foreach (var instrument in CachedFutures)
+        foreach (var future in CachedFutures)
         {
-            if (instrument.ConId == tickerId)
+            if (future.ConId == tickerId && type.HasValue)
             {
-                instrument.Notify(type.Value, price);
+                future.Notify(type.Value, price);
                 return;
             }
         }
 
         foreach (var option in CachedOptions)
         {
-            if (option.ConId == tickerId)
+            if (option.ConId == tickerId && type.HasValue)
             {
                 option.Notify(type.Value, price);
                 return;

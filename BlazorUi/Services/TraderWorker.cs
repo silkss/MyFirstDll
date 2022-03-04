@@ -47,8 +47,7 @@ public class TraderWorker
         {
             _workingContainers.Add(container);
         }
-        _connector.CacheFuture(container.Future);
-        container.Start();
+        container.Start(_connector);
     }
 
     public void StopContainer(Container container)
@@ -137,11 +136,9 @@ public class TraderWorker
                 call = db_call;
             #endregion
 
-            _connector.CacheOption(call);
-            _connector.CacheOption(put);
 
-            straddle.CreatAndAddStrategy(put);
-            straddle.CreatAndAddStrategy(call);
+            straddle.CreatAndAddStrategy(put).Start(_connector);
+            straddle.CreatAndAddStrategy(call).Start(_connector);
 
             container.AddStraddle(straddle);
             await straddleRepository.CreateAsync(straddle);

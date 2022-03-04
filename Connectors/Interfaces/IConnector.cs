@@ -1,12 +1,5 @@
-﻿using Connectors.Enums;
-using Connectors.Orders;
+﻿namespace Connectors.Interfaces;
 
-namespace Connectors.Interfaces;
-/// <summary>
-/// Заменить template elements на интерфейсы
-/// </summary>
-/// <typeparam name="TFuture"></typeparam>
-/// <typeparam name="TOption"></typeparam>
 public interface IConnector
 {
     Action<int, IFuture> FutureAdded { get; set; }

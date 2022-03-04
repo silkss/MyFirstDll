@@ -1,4 +1,5 @@
-﻿using DataLayer.Models.Instruments;
+﻿using Connectors.Interfaces;
+using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies.Base;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,17 @@ public class OptionStrategy : BaseStrategy
     public List<DbOrder> StrategyOrders { get; set; }
     #endregion
     #endregion
-    
+
+    #region Methods
+
+    #region PublicMethods
+
+    public void Start(IConnector connector)
+    {
+        if (Option != null)
+            connector.CacheOption(Option);
+    }
+
     public void Work()
     {
         switch (StrategyLogic)
@@ -48,8 +59,12 @@ public class OptionStrategy : BaseStrategy
 
             if (Option != null)
             {
-                //Option.SendOrder(); ??
+                Option.SendOrder(); 
             }
         }
     }
+
+    #endregion
+
+    #endregion
 }

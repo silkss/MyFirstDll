@@ -1,4 +1,5 @@
 ﻿using Connectors.Enums;
+using Connectors.Interfaces;
 using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using System;
@@ -59,9 +60,15 @@ public class Container : IEntity
         LongStraddles.Add(straddle);
     }
 
-    public void Start()
+    public void Start(IConnector connector)
     {
+        connector.CacheFuture(Future);
+        foreach (var straddle in LongStraddles)
+        {
+            straddle.Start(connector);
+        }
         Started = true;
+        
         Future.Tick += onInstrumentChanged;
     }
 

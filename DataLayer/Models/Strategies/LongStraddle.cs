@@ -1,4 +1,5 @@
 ﻿using Connectors.Enums;
+using Connectors.Interfaces;
 using DataLayer.Enums;
 using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
@@ -28,6 +29,13 @@ public class LongStraddle : IEntity
     #region PublicMethods
     public DateTime ExpirationDate { get; set; }
     public double Strike { get; set; }
+    public void Start(IConnector connector)
+    {
+        foreach (var optionstrategy in OptionStrategies)
+        {
+            optionstrategy.Start(connector);
+        }
+    }
     public void Work()
     { 
         foreach (var strategy in OptionStrategies)
