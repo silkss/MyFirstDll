@@ -28,7 +28,7 @@ public interface IOrder
         OrderType = OrderType,
         TotalQuantity = TotalQuantity
     };
-
+    void SetOrderHolder(IOrderHolder orderHolder);
     void Filled();
     void Submitted();
     void Canceled();

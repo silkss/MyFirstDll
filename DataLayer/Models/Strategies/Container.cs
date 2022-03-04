@@ -48,7 +48,7 @@ public class Container : IEntity
     {
         foreach (var straddle in LongStraddles)
         {
-            straddle.Work();
+            straddle.Work(Account);
         }
     }
     #endregion

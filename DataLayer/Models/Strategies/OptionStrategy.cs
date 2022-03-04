@@ -7,8 +7,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Strategies;
 
-public class OptionStrategy : BaseStrategy
+public class OptionStrategy : BaseStrategy, IOrderHolder
 {
+    #region Props
+
+    #region PublicProps
     #region DB
     #region Instrument
     public int? OptionId { get; set; }
@@ -24,6 +27,13 @@ public class OptionStrategy : BaseStrategy
     public List<DbOrder> StrategyOrders { get; set; }
     #endregion
     #endregion
+    #endregion
+
+    #region _privateProps
+    private IOrder? _openOrder;
+    #endregion
+
+    #endregion
 
     #region Methods
 
@@ -35,12 +45,12 @@ public class OptionStrategy : BaseStrategy
             connector.CacheOption(Option);
     }
 
-    public void Work()
+    public void Work(string account)
     {
         switch (StrategyLogic)
         {
-            case Enums.StrategyLogic.OpenPoition:
-                openPositionLogic();
+            case Enums.StrategyLogic.OpenPoition when _openOrder == null:
+                openPositionLogic(account);
                 break;
             case Enums.StrategyLogic.ClosePostion:
                 break;
@@ -49,9 +59,27 @@ public class OptionStrategy : BaseStrategy
         }
     }
 
-    private void openPositionLogic()
+    public void OnOrderFilled()
     {
-        if (Volume < Math.Abs(Position))
+        throw new NotImplementedException();
+    }
+
+    public void OnCanceled()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void onFilledQunatityChanged()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region privateMethods
+    private void openPositionLogic(string account)
+    {
+        if (Volume > Math.Abs(Position))
         {
             /*
              * Need To send order!
@@ -59,11 +87,10 @@ public class OptionStrategy : BaseStrategy
 
             if (Option != null)
             {
-                Option.SendOrder(); 
+                _openOrder = Option.SendOrder(Direction, account, Volume, this);
             }
         }
     }
-
     #endregion
 
     #endregion

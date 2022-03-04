@@ -29,6 +29,9 @@ public class DbOrder : IOrder, IEntity
     public string? Status { get; set; }
     #endregion
 
+    #region _privateProps
+    private IOrderHolder? _orderHolder;
+    #endregion
     #endregion
 
     #region Methods
@@ -48,14 +51,9 @@ public class DbOrder : IOrder, IEntity
         throw new NotImplementedException();
     }
 
-    public IOrder SendOrder()
+    public void SetOrderHolder(IOrderHolder orderHolder)
     {
-        throw new NotImplementedException();
-    }
-
-    public void SetConnector(IConnector connector)
-    {
-        throw new NotImplementedException();
+        _orderHolder = orderHolder;
     }
     #endregion
 

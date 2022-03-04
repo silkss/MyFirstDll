@@ -36,11 +36,11 @@ public class LongStraddle : IEntity
             optionstrategy.Start(connector);
         }
     }
-    public void Work()
+    public void Work(string account)
     { 
         foreach (var strategy in OptionStrategies)
         {
-            strategy.Work();
+            strategy.Work(account);
         }
     }
     public OptionStrategy CreatAndAddStrategy(DbOption option, int volume = 1)

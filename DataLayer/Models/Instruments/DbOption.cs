@@ -76,10 +76,21 @@ public class DbOption : IOption, IEntity
         }
     }
 
-    public IOrder? SendOrder()
+    public IOrder? SendOrder(Direction direction, string account, int quantity, IOrderHolder orderHolder)
     {
         if (_connector == null) return null;
-        return new DbOrder();
+        if (TheorPrice <= 0) return null;
+        var order = new DbOrder
+        {
+            OrderId = -1,
+            Direction = direction,
+            Account = account,
+            TotalQuantity = quantity,
+            LmtPrice = TheorPrice
+        };
+        order.SetOrderHolder(orderHolder);
+        _connector.SendOptionOrder(order, this);
+        return order; 
     }
 
     public void SetConnector(IConnector connector)
