@@ -1,6 +1,7 @@
 ﻿using Connectors.Enums;
 using Connectors.Interfaces;
 using DataLayer.Interfaces;
+using DataLayer.Models.Strategies;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,6 +9,9 @@ namespace DataLayer.Models.Instruments;
 
 public class DbOption : IOption, IEntity
 {
+    #region Props
+
+    #region PublicProps
     #region DbReferences
     public int Id { get; set; }
     #region Future
@@ -41,9 +45,31 @@ public class DbOption : IOption, IEntity
     public decimal TheorPrice { get; set; }
 
     public event Action<TickType> InstrumentChanged = delegate { };
+    #endregion
 
+    #region _privateProps
+    private IConnector? _connector;
+    #endregion
+
+    #endregion
+
+    #region Methods
+    #region PublicMethods
     public void Notify(TickType type, double price)
     {
         //throw new NotImplementedException();
     }
+
+    public IOrder? SendOrder()
+    {
+        if (_connector == null) return null;
+        return new DbOrder();
+    }
+
+    public void SetConnector(IConnector connector)
+    {
+        _connector = connector;
+    }
+    #endregion
+    #endregion 
 }

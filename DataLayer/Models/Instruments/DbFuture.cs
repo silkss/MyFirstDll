@@ -11,6 +11,8 @@ namespace DataLayer.Models.Instruments;
 
 public class DbFuture : IFuture, IEntity
 {
+    #region Props
+    #region PublicProps
     [NotMapped]
     public List<OptionChain> OptionChain { get; } = new();
     public int Id { get; set; }
@@ -41,12 +43,27 @@ public class DbFuture : IFuture, IEntity
 
     public List<DbOption> Options { get; set; } = new();
     #endregion
+    #endregion
+
+    #region _privateProps
+    private IConnector? _connector;
+    #endregion
+    #endregion
+
+    #region Methods
+    #region PublicMethods
+    public void SetConnector(IConnector connector)
+    {
+        _connector = connector;
+    }
 
     public void Notify(TickType type, double price)
     {
         var action = Tick;
         action?.Invoke(type, price);
     }
+    #endregion
+    #endregion
 
 }
 

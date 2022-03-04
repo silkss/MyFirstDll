@@ -9,6 +9,8 @@ public interface IOption : IInstrument
     string TradingClass { get; set; }
     OptionType OptionType { get; set; }
     int UnderlyingId { get; set; }
+    IOrder? SendOrder();
+
     public Contract ToIbContract() => new Contract()
     {
         ConId = this.ConId,

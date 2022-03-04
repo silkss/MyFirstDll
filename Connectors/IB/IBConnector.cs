@@ -48,9 +48,6 @@ public class IBConnector : DefaultEWrapper, IConnector
         Signal = new EReaderMonitorSignal();
         ClientSocket = new EClientSocket(this, Signal);
 
-        OpenOrders = new List<GotOrder>();
-        AccountList = new List<string>();
-
         logger.AddLog(LogType.Info, "Connector created");
     }
 
@@ -127,8 +124,8 @@ public class IBConnector : DefaultEWrapper, IConnector
     #region Instruments
     private readonly List<IFuture> CachedFutures = new();
     private readonly List<IOption> CachedOptions = new();
-    private readonly List<string> AccountList;
-    private readonly List<GotOrder> OpenOrders;
+    private readonly List<string> AccountList = new();
+    private readonly List<IOrder> OpenOrders = new();
     private readonly List<int> instrumentreqlist = new();
     public IEnumerable<string> GetAccountList() => AccountList;
     public IEnumerable<IFuture> GetCachedFutures() => CachedFutures;
@@ -299,12 +296,17 @@ public class IBConnector : DefaultEWrapper, IConnector
     }
 
     #region Add and Remove Instrument from Cache
+    /// <summary>
+    /// Добавляет в кешированые инструменты новый инструмент и запрашивает рыночные данные по нему.
+    /// </summary>
+    /// <param name="option">Собственно тот инструмент который будет добавлен и для кого будут запрошены данные</param>
     public void CacheOption(IOption option)
     {
         if (option.ConId != default && !CachedOptions.Any(co => co.ConId == option.ConId))
         {
             CachedOptions.Add(option);
         }
+        option.SetConnector(this);
         ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
         ClientSocket.reqMarketRule(option.MarketRule);
     }
@@ -338,19 +340,19 @@ public class IBConnector : DefaultEWrapper, IConnector
     #endregion
 
     #region Orders 
-    public void SendOptionOrder(GotOrder order, IOption option)
+    public void SendOptionOrder(IOrder order, IOption option)
     {
-        if (order.Id == -1)
+        if (order.OrderId == -1)
         {
-            order.Id = nextOrderId++;
+            order.OrderId = nextOrderId++;
         }
 
         OpenOrders.Add(order);
-        ClientSocket.placeOrder(order.Id, option.ToIbContract(), order.ToIbOrder());
+        ClientSocket.placeOrder(order.OrderId, option.ToIbContract(), order.ToIbOrder());
     }
     public override void orderStatus(int orderId, string status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld, double mktCapPrice)
     {
-        var openorder = OpenOrders.Where(o => o.Id == orderId).FirstOrDefault();
+        var openorder = OpenOrders.Where(o => o.OrderId == orderId).FirstOrDefault();
         if (openorder != null)
         {
             openorder.Status = status;
@@ -362,7 +364,7 @@ public class IBConnector : DefaultEWrapper, IConnector
     {
         if (orderState.Commission != double.MaxValue)
         {
-            var openorder = OpenOrders.Where(o => o.Id == orderId).FirstOrDefault();
+            var openorder = OpenOrders.Where(o => o.OrderId == orderId).FirstOrDefault();
             if (openorder != null)
             {
                 if (openorder.FilledQuantity == openorder.TotalQuantity)
@@ -451,7 +453,7 @@ public class IBConnector : DefaultEWrapper, IConnector
         switch (errorCode)
         {
             case 140:
-                if (OpenOrders.FirstOrDefault(o => o.Id == id) is GotOrder order)
+                if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder order)
                 {
                     OpenOrders.Remove(order);
                     order.Canceled();

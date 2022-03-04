@@ -68,6 +68,7 @@ public class Container : IEntity
     public void Stop()
     {
         Started = false;
+        Future.Tick -= onInstrumentChanged;
     }
 
     public LongStraddle? ChooseBestOptionChain(double price)

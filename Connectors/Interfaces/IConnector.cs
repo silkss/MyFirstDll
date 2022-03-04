@@ -29,5 +29,5 @@ public interface IConnector
     IEnumerable<IOption> GetCachedOptions();
     IEnumerable<string> GetAccountList();
 
-    void SendOptionOrder(GotOrder order, IOption option);
+    void SendOptionOrder(IOrder order, IOption option);
 }
