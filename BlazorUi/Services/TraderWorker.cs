@@ -1,11 +1,9 @@
 ﻿using Connectors.Enums;
 using Connectors.Interfaces;
 using Connectors.Models.Instruments;
-using DataLayer.Enums;
 using DataLayer.Models;
 using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BlazorUi.Services;
 
@@ -63,7 +61,7 @@ public class TraderWorker
     }
 
     public async Task SignalOnOpenAsync(string symbol, double price, string account, 
-        ContainersRepository containersRepository, OptionRepository optionRepository)
+        ContainersRepository containersRepository, OptionRepository optionRepository, StraddleRepository straddleRepository)
     {
         if (_connector.IsConnected == false) return;
 
@@ -139,15 +137,24 @@ public class TraderWorker
                 call = db_call;
             #endregion
 
+            _connector.CacheOption(call);
+            _connector.CacheOption(put);
+
             straddle.CreatAndAddStrategy(put);
             straddle.CreatAndAddStrategy(call);
 
-            //container.LongStraddles.Add(straddle);
+            container.AddStraddle(straddle);
+            await straddleRepository.CreateAsync(straddle);
         }
+        else if (straddle.IsOpen())
+        {
+            return;
+        }
+           
     }
 
     public void SignalOnClose(string symbol, double price)
-    { 
+    {
     }
     #endregion
 

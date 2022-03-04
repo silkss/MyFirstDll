@@ -30,6 +30,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 #region Scoped
 builder.Services.AddScoped<FutureRepository>();
 builder.Services.AddScoped<OptionRepository>();
+builder.Services.AddScoped<StraddleRepository>();
 builder.Services.AddScoped<ContainersRepository>();
 #endregion
 
@@ -49,10 +50,10 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, 
     TraderWorker worker, ContainersRepository containersRepository,
-    OptionRepository optionRepository) =>
+    OptionRepository optionRepository, StraddleRepository straddleRepository) =>
 {
     if (type == "OPEN")
-        await worker.SignalOnOpenAsync(symbol, price, account, containersRepository, optionRepository);
+        await worker.SignalOnOpenAsync(symbol, price, account, containersRepository, optionRepository, straddleRepository);
     else if (type == "CLOSE")
         worker.SignalOnClose(symbol, price);
 });

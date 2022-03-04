@@ -45,11 +45,20 @@ public class Container : IEntity
     #region Private Methods
     private void onInstrumentChanged(TickType type, double price)
     {
-
+        foreach (var straddle in LongStraddles)
+        {
+            straddle.Work();
+        }
     }
     #endregion
 
     #region Public Methods
+    public void AddStraddle(LongStraddle straddle)
+    {
+        straddle.ContainerId = Id;
+        LongStraddles.Add(straddle);
+    }
+
     public void Start()
     {
         Started = true;

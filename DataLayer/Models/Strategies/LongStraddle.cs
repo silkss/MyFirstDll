@@ -5,6 +5,7 @@ using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataLayer.Models;
 
@@ -34,7 +35,6 @@ public class LongStraddle : IEntity
             strategy.Work();
         }
     }
-
     public OptionStrategy CreatAndAddStrategy(DbOption option, int volume = 1)
     {
         var option_strategy = new OptionStrategy
@@ -49,6 +49,8 @@ public class LongStraddle : IEntity
         OptionStrategies.Add(option_strategy);
         return option_strategy;
     }
+    public bool IsOpen() => !OptionStrategies
+        .Any(os => os.StrategyLogic == StrategyLogic.ClosePostion);
     #endregion
 
     #endregion

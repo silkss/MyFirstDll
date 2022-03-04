@@ -16,6 +16,7 @@ public class ContainersRepository : BaseRepository<Container>
         .Include(container => container.Future)
         .ThenInclude(future => future.Options)
         .Include(container => container.LongStraddles)
+        .ThenInclude(straddle => straddle.OptionStrategies)
         .ToListAsync();
     protected override bool _Contains(DbSet<Container> set, Container entity) =>
         set.Any(c => c.Account == entity.Account && c.Future.LocalSymbol == entity.Future.LocalSymbol);

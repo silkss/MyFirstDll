@@ -255,8 +255,8 @@ public class IBConnector : DefaultEWrapper, IConnector
         option.Strike = (Decimal)contractDetails.Contract.Strike;
         option.TradingClass = contractDetails.Contract.TradingClass;
 
-        ClientSocket.reqMktData(contractDetails.Contract.ConId, contractDetails.Contract, string.Empty, false, false, null);
-        ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
+        //ClientSocket.reqMktData(contractDetails.Contract.ConId, contractDetails.Contract, string.Empty, false, false, null);
+        //ClientSocket.reqMarketRule(int.Parse(contractDetails.MarketRuleIds));
 
         return true;
     }
@@ -305,6 +305,8 @@ public class IBConnector : DefaultEWrapper, IConnector
         {
             CachedOptions.Add(option);
         }
+        ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
+        ClientSocket.reqMarketRule(option.MarketRule);
     }
     public bool RemoveCachedFuture(IFuture future)
     {
