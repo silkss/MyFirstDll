@@ -59,19 +59,23 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         }
     }
 
-    public void OnOrderFilled()
+    public void OnOrderFilled(int orderId)
     {
-        throw new NotImplementedException();
+        if (_openOrder == null) return;
+        if (_openOrder.OrderId != orderId) return;
+        Position = _openOrder.FilledQuantity;
     }
 
-    public void OnCanceled()
+    public void OnCanceled(int orderId)
     {
-        throw new NotImplementedException();
+        if (_openOrder == null) return;
+        if (_openOrder.OrderId != orderId) return;
+        _openOrder = null;
     }
 
-    public void onFilledQunatityChanged()
+    public void onFilledQunatityChanged(int orderId)
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
     }
 
     #endregion
@@ -81,13 +85,9 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     {
         if (Volume > Math.Abs(Position))
         {
-            /*
-             * Need To send order!
-             */
-
             if (Option != null)
             {
-                _openOrder = Option.SendOrder(Direction, account, Volume, this);
+                _openOrder = Option.SendOrder(Direction, account, Volume - Math.Abs(Position), this);
             }
         }
     }

@@ -60,7 +60,7 @@ public class TraderWorker
     }
 
     public async Task SignalOnOpenAsync(string symbol, double price, string account, 
-        ContainersRepository containersRepository, OptionRepository optionRepository, StraddleRepository straddleRepository)
+        OptionRepository optionRepository, StraddleRepository straddleRepository)
     {
         if (_connector.IsConnected == false) return;
 

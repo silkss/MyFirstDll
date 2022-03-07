@@ -44,7 +44,10 @@ public class DbOrder : IOrder, IEntity
 
     public void Filled()
     {
-        throw new NotImplementedException();
+        if (_orderHolder != null)
+        {
+            _orderHolder.OnOrderFilled(OrderId);
+        }
     }
     public void Submitted()
     {

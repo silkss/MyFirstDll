@@ -2,7 +2,7 @@
 
 public interface IOrderHolder
 {
-    void OnOrderFilled();
-    void OnCanceled();
-    void onFilledQunatityChanged();
+    void OnOrderFilled(int orderId);
+    void OnCanceled(int orderId);
+    void onFilledQunatityChanged(int orderId);
 }
