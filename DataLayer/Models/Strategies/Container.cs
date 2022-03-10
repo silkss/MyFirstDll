@@ -37,6 +37,7 @@ public class Container : IEntity
     [NotMapped]
     public bool Started { get; private set; }
     public string Account { get; set; }
+    public DateTime LastTradeDate { get; set; }
     #endregion
 
     #endregion

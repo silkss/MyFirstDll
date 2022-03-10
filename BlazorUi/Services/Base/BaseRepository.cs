@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorUi.Services.Base;
 
-public abstract class BaseRepository<T>
+public abstract class BaseRepository<T> : IRepository<T>
     where T : class, IEntity
 {
-    //protected readonly DataContext _dataContext;
     protected readonly IDbContextFactory<DataContext> _dataContextFactory;
 
     public BaseRepository(IDbContextFactory<DataContext> dataContextFactory)
     {
         _dataContextFactory = dataContextFactory;
     }
+
     public async Task<bool> CreateAsync(T entity)
     {
         using (var _dataContext = _dataContextFactory.CreateDbContext())
@@ -58,7 +58,6 @@ public abstract class BaseRepository<T>
     {
         using (var _dataContext = _dataContextFactory.CreateDbContext())
         {
-
             _dataContext.Entry(entity).State = EntityState.Modified;
             await _dataContext.SaveChangesAsync();
         }

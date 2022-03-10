@@ -4,6 +4,7 @@ using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorUi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220310155409_Want to create cascade")]
+    partial class Wanttocreatecascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,11 +172,8 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FutureId")
+                    b.Property<int>("FutureId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("LastTradeDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -240,7 +239,9 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
                         .WithMany("Containers")
-                        .HasForeignKey("FutureId");
+                        .HasForeignKey("FutureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Future");
                 });

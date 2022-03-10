@@ -7,6 +7,7 @@ using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataLayer.Models;
 
@@ -43,18 +44,21 @@ public class LongStraddle : IEntity
             strategy.Work(account);
         }
     }
-    public OptionStrategy CreatAndAddStrategy(DbOption option, int volume = 1)
+    public async Task<OptionStrategy> CreatAndAddStrategyAsync(DbOption option, IRepository<OptionStrategy> repository, int volume = 1)
     {
         var option_strategy = new OptionStrategy
         {
             Direction = Direction.Buy,
             OptionId = option.Id,
-            Option = option,
             Volume = volume,
             StrategyLogic = StrategyLogic.OpenPoition
         };
 
+        _ = await repository.CreateAsync(option_strategy);
+
         OptionStrategies.Add(option_strategy);
+        option_strategy.Option = option;
+
         return option_strategy;
     }
     public bool IsOpen() => !OptionStrategies

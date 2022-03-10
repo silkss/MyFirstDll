@@ -14,7 +14,9 @@ public class TraderWorker
     #region _privateProps
     private readonly IConnector _connector;
     private readonly ILogger<TraderWorker> _logger;
-
+    private readonly OptionRepository _optionRepository;
+    private readonly StraddleRepository _straddleRepository;
+    private readonly StrategyRepository _strategyRepository;
     private readonly List<Container> _workingContainers = new();
 
     private TimeSpan _period = new(9, 0, 0, 0);
@@ -22,10 +24,16 @@ public class TraderWorker
     
     #endregion
 
-    public TraderWorker(IConnector connector, ILogger<TraderWorker> logger)
+    public TraderWorker(IConnector connector, 
+        ILogger<TraderWorker> logger, 
+        OptionRepository optionRepository, StraddleRepository straddleRepository,
+        StrategyRepository strategyRepository)
     {
         _connector = connector;
         _logger = logger;
+        _optionRepository = optionRepository;
+        _straddleRepository = straddleRepository;
+        _strategyRepository = strategyRepository;
     }
     #region Methods
 
@@ -59,8 +67,7 @@ public class TraderWorker
         container.Stop();
     }
 
-    public async Task SignalOnOpenAsync(string symbol, double price, string account, 
-        OptionRepository optionRepository, StraddleRepository straddleRepository)
+    public async Task SignalOnOpenAsync(string symbol, double price, string account)
     {
         if (_connector.IsConnected == false) return;
 
@@ -123,31 +130,35 @@ public class TraderWorker
             }
 
             #region проверка на то, есть ли в базе данных опцион. Если да, то используем его
-            var db_put = optionRepository.GetOptionBuyConId(put.ConId);
+            var db_put = _optionRepository.GetOptionBuyConId(put.ConId);
             if (db_put == null)
-                _ = await optionRepository.CreateAsync(put);
+                _ = await _optionRepository.CreateAsync(put);
             else
                 put = db_put;
 
-            var db_call = optionRepository.GetOptionBuyConId(call.ConId);
+            var db_call = _optionRepository.GetOptionBuyConId(call.ConId);
             if (db_call == null)
-                _ = await optionRepository.CreateAsync(call);
+                _ = await _optionRepository.CreateAsync(call);
             else
                 call = db_call;
             #endregion
 
+            await _straddleRepository.CreateAsync(straddle);
 
-            straddle.CreatAndAddStrategy(put).Start(_connector);
-            straddle.CreatAndAddStrategy(call).Start(_connector);
+            var put_strategy = await straddle.CreatAndAddStrategyAsync(put, _strategyRepository); 
+            put_strategy.Start(_connector);
+
+            var call_strategy = await straddle.CreatAndAddStrategyAsync(call, _strategyRepository); 
+            call_strategy.Start(_connector);
 
             container.AddStraddle(straddle);
-            await straddleRepository.CreateAsync(straddle);
+
+            
         }
         else if (straddle.IsOpen())
         {
             return;
         }
-           
     }
 
     public void SignalOnClose(string symbol, double price)

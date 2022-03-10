@@ -13,6 +13,11 @@ builder.Services.AddServerSideBlazor();
 
 #region Singletons
 builder.Services.AddSingleton<IConnector, IBConnector>();
+builder.Services.AddSingleton<FutureRepository>();
+builder.Services.AddSingleton<OptionRepository>();
+builder.Services.AddSingleton<StraddleRepository>();
+builder.Services.AddSingleton<ContainersRepository>();
+builder.Services.AddSingleton<StrategyRepository>();
 builder.Services.AddSingleton<TraderWorker>();
 builder.Services.AddSingleton<WeatherForecastService>();
 #endregion
@@ -34,14 +39,10 @@ builder.Services.AddDbContextFactory<DataContext>(options =>
         b.MigrationsAssembly("BlazorUi");
     });
 });
-
 #endregion
 
 #region Scoped
-builder.Services.AddScoped<FutureRepository>();
-builder.Services.AddScoped<OptionRepository>();
-builder.Services.AddScoped<StraddleRepository>();
-builder.Services.AddScoped<ContainersRepository>();
+
 #endregion
 
 var app = builder.Build();
@@ -58,11 +59,10 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, 
-    TraderWorker worker, OptionRepository optionRepository, StraddleRepository straddleRepository) =>
+app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, TraderWorker worker) =>
 {
     if (type == "OPEN")
-        await worker.SignalOnOpenAsync(symbol, price, account, optionRepository, straddleRepository);
+        await worker.SignalOnOpenAsync(symbol, price, account);
     else if (type == "CLOSE")
         worker.SignalOnClose(symbol, price);
 });

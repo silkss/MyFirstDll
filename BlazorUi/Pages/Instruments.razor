@@ -159,7 +159,9 @@ else
     {
         _accounts = _Connector.GetAccountList();
         newContainer = new();
-        newContainer.Future = future;
+        //newContainer.Future = future;
+        newContainer.FutureId = future.Id;
+        newContainer.LastTradeDate = future.LastTradeDate;
         isAddContainer = true;
     }
 

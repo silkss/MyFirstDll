@@ -26,6 +26,6 @@ public class ContainersRepository : BaseRepository<Container>
         }
         return list;
     }
-    protected override bool _Contains(DbSet<Container> set, Container entity) =>
-        set.Any(c => c.Account == entity.Account && c.Future.LocalSymbol == entity.Future.LocalSymbol);
+    protected override bool _Contains(DbSet<Container> set, Container entity) => 
+        set.Any(c => c.Account == entity.Account && c.LastTradeDate == entity.LastTradeDate);
 }
