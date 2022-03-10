@@ -7,17 +7,25 @@ namespace BlazorUi.Services;
 
 public class ContainersRepository : BaseRepository<Container>
 {
-    public ContainersRepository(DataContext dataContext) : base(dataContext)
+    public ContainersRepository(IDbContextFactory<DataContext> dataContextFactory) : base(dataContextFactory)
     {
 
     }
-    public override async Task<IList<Container>> GetAllAsync() => await _dataContext
-        .Containers
-        .Include(container => container.Future)
-        .ThenInclude(future => future.Options)
-        .Include(container => container.LongStraddles)
-        .ThenInclude(straddle => straddle.OptionStrategies)
-        .ToListAsync();
+    public override async Task<IList<Container>> GetAllAsync()
+    {
+        var list = new List<Container>();
+        using (var _dataContext = _dataContextFactory.CreateDbContext())
+        {
+            list = await _dataContext
+                .Containers
+                .Include(container => container.Future)
+                .ThenInclude(future => future.Options)
+                .Include(container => container.LongStraddles)
+                .ThenInclude(straddle => straddle.OptionStrategies)
+                .ToListAsync();
+        }
+        return list;
+    }
     protected override bool _Contains(DbSet<Container> set, Container entity) =>
         set.Any(c => c.Account == entity.Account && c.Future.LocalSymbol == entity.Future.LocalSymbol);
 }

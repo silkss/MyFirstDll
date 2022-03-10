@@ -7,7 +7,7 @@ namespace BlazorUi.Services;
 
 public class StraddleRepository : BaseRepository<LongStraddle>
 {
-    public StraddleRepository(DataContext dataContext) : base(dataContext)
+    public StraddleRepository(IDbContextFactory<DataContext> dataContextFactory) : base(dataContextFactory)
     {
 
     }

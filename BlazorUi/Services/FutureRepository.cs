@@ -7,7 +7,7 @@ namespace BlazorUi.Services;
 
 public class FutureRepository : BaseRepository<DbFuture>
 {
-    public FutureRepository(DataContext dataContext) : base(dataContext)
+    public FutureRepository(IDbContextFactory<DataContext> dataContextFactory) : base(dataContextFactory)
     {
     }
 

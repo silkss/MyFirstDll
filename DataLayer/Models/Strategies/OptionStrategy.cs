@@ -64,6 +64,11 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
         Position = _openOrder.FilledQuantity;
+        _openOrder = null;
+        /*
+         * необходимо сохранять изменения стратегии и 
+         * ордера.
+         */
     }
 
     public void OnCanceled(int orderId)

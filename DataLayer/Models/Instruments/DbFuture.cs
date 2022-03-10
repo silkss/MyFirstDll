@@ -59,6 +59,20 @@ public class DbFuture : IFuture, IEntity
 
     public void Notify(TickType type, double price)
     {
+        switch (type)
+        {
+            case TickType.Bid:
+                break;
+            case TickType.Ask:
+                break;
+            case TickType.LastPrice:
+                LastPrice = (decimal)price;
+                break;
+            case TickType.TheorPrice:
+                break;
+            default:
+                break;
+        }
         var action = Tick;
         action?.Invoke(type, price);
     }

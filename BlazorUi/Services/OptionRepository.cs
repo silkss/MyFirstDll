@@ -7,7 +7,7 @@ namespace BlazorUi.Services;
 
 public class OptionRepository : BaseRepository<DbOption>
 {
-    public OptionRepository(DataContext dataContext) : base(dataContext)
+    public OptionRepository(IDbContextFactory<DataContext> dataContextFactory) : base(dataContextFactory)
     {
 
     }
@@ -18,8 +18,17 @@ public class OptionRepository : BaseRepository<DbOption>
     #endregion
 
     #region PublicMethods
-    public DbOption? GetOptionBuyConId(int conid) => _dataContext.Set<DbOption>()
-        .FirstOrDefault(option => option.ConId == conid);
+    public DbOption? GetOptionBuyConId(int conid)
+    {
+        DbOption? option = null;
+        using (var _dataContext = _dataContextFactory.CreateDbContext())
+        {
+            option = _dataContext.Set<DbOption>()
+                .FirstOrDefault(option => option.ConId == conid);
+        }
+        return option;
+    }
+    
     #endregion
     #endregion
 }

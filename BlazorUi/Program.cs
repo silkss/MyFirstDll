@@ -18,6 +18,7 @@ builder.Services.AddSingleton<WeatherForecastService>();
 #endregion
 
 #region DB Context
+/*
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
@@ -25,6 +26,15 @@ builder.Services.AddDbContext<DataContext>(options =>
         b.MigrationsAssembly("BlazorUi");
     });
 });
+*/
+builder.Services.AddDbContextFactory<DataContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
+    {
+        b.MigrationsAssembly("BlazorUi");
+    });
+});
+
 #endregion
 
 #region Scoped
