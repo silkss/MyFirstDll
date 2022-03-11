@@ -9,7 +9,7 @@ public interface IOption : IInstrument
     string TradingClass { get; set; }
     OptionType OptionType { get; set; }
     int UnderlyingId { get; set; }
-    IOrder? SendOrder(Direction direction, string account, int quantity, IOrderHolder orderHolder);
+    bool SendOrder(IOrder order, IOrderHolder orderHolder);
 
     public Contract ToIbContract() => new Contract()
     {

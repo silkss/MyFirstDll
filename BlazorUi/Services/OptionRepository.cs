@@ -14,7 +14,7 @@ public class OptionRepository : BaseRepository<DbOption>
 
     #region Methods
     #region _ProtectedMethods
-    protected override bool _Contains(DbSet<DbOption> set, DbOption entity) => set.Any(item => item.ConId == entity.ConId);
+    protected override bool _Contains(List<DbOption> entities, DbOption entity) => entities.Any(item => item.ConId == entity.ConId);
     #endregion
 
     #region PublicMethods

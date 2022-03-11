@@ -11,6 +11,7 @@ namespace Connectors.IB;
 
 public class IBConnector : DefaultEWrapper, IConnector
 {
+    #region _privateProps
     private string ip;
     private int port;
     private int clientid;
@@ -26,6 +27,9 @@ public class IBConnector : DefaultEWrapper, IConnector
     private readonly object _optionLock = new();
     private readonly Queue<(int, ContractDetails?)> _futureQueue = new();
     private readonly Queue<(int, ContractDetails?)> _optionQueue = new();
+
+    private object _optionCollectionLock = new();
+    #endregion
 
     public Action<int, IFuture> FutureAdded { get; set; } = delegate { };
     public Action<int, IOption> OptionAdded { get; set; } = delegate { };
@@ -199,7 +203,9 @@ public class IBConnector : DefaultEWrapper, IConnector
             Multiplier = parent.Multiplier.ToString()
         };
         var orderid = nextOrderId++;
+
         ClientSocket.reqContractDetails(orderid, contract);
+
         return orderid;
     }
 
@@ -304,7 +310,10 @@ public class IBConnector : DefaultEWrapper, IConnector
     {
         if (option.ConId != default && !CachedOptions.Any(co => co.ConId == option.ConId))
         {
-            CachedOptions.Add(option);
+            lock (_optionCollectionLock)
+            {
+                CachedOptions.Add(option);
+            }
         }
         option.SetConnector(this);
         ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null);
@@ -411,12 +420,14 @@ public class IBConnector : DefaultEWrapper, IConnector
         if (field != IBApi.TickType.MODEL_OPTION &&
             field != IBApi.TickType.DELAYED_MODEL_OPTION) 
             return;
-
-        foreach (var option in CachedOptions)
+        lock (_optionCollectionLock)
         {
-            if (option.ConId == tickerId)
+            foreach (var option in CachedOptions)
             {
-                option.Notify(Connectors.Enums.TickType.TheorPrice, optPrice);
+                if (option.ConId == tickerId)
+                {
+                    option.Notify(Connectors.Enums.TickType.TheorPrice, optPrice);
+                }
             }
         }
     }
@@ -472,6 +483,13 @@ public class IBConnector : DefaultEWrapper, IConnector
                     var opt_tup = (id, contractDetails);
                     _optionQueue.Enqueue(opt_tup);
                     Monitor.Pulse(_optionLock);
+                }
+                break;
+            case 202:
+                if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder canceledorder)
+                {
+                    OpenOrders.Remove(canceledorder);
+                    canceledorder.Canceled();
                 }
                 break;
             default:

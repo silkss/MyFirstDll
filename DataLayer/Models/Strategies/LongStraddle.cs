@@ -30,11 +30,11 @@ public class LongStraddle : IEntity
     #region PublicMethods
     public DateTime ExpirationDate { get; set; }
     public double Strike { get; set; }
-    public void Start(IConnector connector)
+    public void Start(IConnector connector, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         foreach (var optionstrategy in OptionStrategies)
         {
-            optionstrategy.Start(connector);
+            optionstrategy.Start(connector, repository, orderRepository);
         }
     }
     public void Work(string account)
@@ -44,12 +44,13 @@ public class LongStraddle : IEntity
             strategy.Work(account);
         }
     }
-    public async Task<OptionStrategy> CreatAndAddStrategyAsync(DbOption option, IRepository<OptionStrategy> repository, int volume = 1)
+    public async Task<OptionStrategy> CreatAndAddStrategyAsync(DbOption option, int straddleId, IRepository<OptionStrategy> repository, int volume = 1)
     {
         var option_strategy = new OptionStrategy
         {
             Direction = Direction.Buy,
             OptionId = option.Id,
+            LongStraddleId = straddleId,
             Volume = volume,
             StrategyLogic = StrategyLogic.OpenPoition
         };

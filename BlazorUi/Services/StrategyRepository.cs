@@ -11,7 +11,7 @@ public class StrategyRepository : BaseRepository<OptionStrategy>
     {
 
     }
-    protected override bool _Contains(DbSet<OptionStrategy> set, OptionStrategy entity)
+    protected override bool _Contains(List<OptionStrategy> entities, OptionStrategy entity)
     {
         return false;
     }

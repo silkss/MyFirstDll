@@ -13,19 +13,21 @@ public class ContainersRepository : BaseRepository<Container>
     }
     public override async Task<IList<Container>> GetAllAsync()
     {
-        var list = new List<Container>();
-        using (var _dataContext = _dataContextFactory.CreateDbContext())
+        if (_entities.Count == 0)
         {
-            list = await _dataContext
-                .Containers
-                .Include(container => container.Future)
-                .ThenInclude(future => future.Options)
-                .Include(container => container.LongStraddles)
-                .ThenInclude(straddle => straddle.OptionStrategies)
-                .ToListAsync();
+            using (var _dataContext = _dataContextFactory.CreateDbContext())
+            {
+                _entities = await _dataContext
+                    .Containers
+                    .Include(container => container.Future)
+                    .ThenInclude(future => future.Options)
+                    .Include(container => container.LongStraddles)
+                    .ThenInclude(straddle => straddle.OptionStrategies)
+                    .ToListAsync();
+            }
         }
-        return list;
+        return _entities;
     }
-    protected override bool _Contains(DbSet<Container> set, Container entity) => 
-        set.Any(c => c.Account == entity.Account && c.LastTradeDate == entity.LastTradeDate);
+    protected override bool _Contains(List<Container> entities, Container entity) =>
+        entities.Any(c => c.Account == entity.Account && c.LastTradeDate == entity.LastTradeDate);
 }

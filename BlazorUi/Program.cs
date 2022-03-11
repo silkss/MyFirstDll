@@ -18,6 +18,7 @@ builder.Services.AddSingleton<OptionRepository>();
 builder.Services.AddSingleton<StraddleRepository>();
 builder.Services.AddSingleton<ContainersRepository>();
 builder.Services.AddSingleton<StrategyRepository>();
+builder.Services.AddSingleton<OrderRepository>();
 builder.Services.AddSingleton<TraderWorker>();
 builder.Services.AddSingleton<WeatherForecastService>();
 #endregion

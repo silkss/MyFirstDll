@@ -4,5 +4,6 @@ namespace DataLayer.Interfaces;
 
 public interface IRepository<T>
 {
-    public Task<bool> CreateAsync(T entity);
+    Task<bool> CreateAsync(T entity);
+    Task UpdateAsync(T source);
 }

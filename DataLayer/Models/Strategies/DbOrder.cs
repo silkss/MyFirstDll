@@ -12,7 +12,7 @@ public class DbOrder : IOrder, IEntity
     #region PublicProps
     #region Db
     public int Id { get; set; }
-    public int OptionStrategyId { get; set; }
+    public int? OptionStrategyId { get; set; }
     public OptionStrategy OptionStrategy { get; set; }
 
     #endregion
@@ -39,7 +39,10 @@ public class DbOrder : IOrder, IEntity
     #region PublicMethods
     public void Canceled()
     {
-        throw new NotImplementedException();
+        if (_orderHolder != null)
+        {
+            _orderHolder.OnCanceled(OrderId);
+        }
     }
 
     public void Filled()
@@ -51,7 +54,7 @@ public class DbOrder : IOrder, IEntity
     }
     public void Submitted()
     {
-        throw new NotImplementedException();
+
     }
 
     public void SetOrderHolder(IOrderHolder orderHolder)

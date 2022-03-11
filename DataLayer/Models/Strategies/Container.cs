@@ -61,12 +61,12 @@ public class Container : IEntity
         LongStraddles.Add(straddle);
     }
 
-    public void Start(IConnector connector)
+    public void Start(IConnector connector, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         connector.CacheFuture(Future);
         foreach (var straddle in LongStraddles)
         {
-            straddle.Start(connector);
+            straddle.Start(connector, repository, orderRepository);
         }
         Started = true;
         

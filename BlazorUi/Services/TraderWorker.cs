@@ -17,6 +17,7 @@ public class TraderWorker
     private readonly OptionRepository _optionRepository;
     private readonly StraddleRepository _straddleRepository;
     private readonly StrategyRepository _strategyRepository;
+    private readonly OrderRepository _orderRepository;
     private readonly List<Container> _workingContainers = new();
 
     private TimeSpan _period = new(9, 0, 0, 0);
@@ -27,13 +28,14 @@ public class TraderWorker
     public TraderWorker(IConnector connector, 
         ILogger<TraderWorker> logger, 
         OptionRepository optionRepository, StraddleRepository straddleRepository,
-        StrategyRepository strategyRepository)
+        StrategyRepository strategyRepository, OrderRepository orderRepository)
     {
         _connector = connector;
         _logger = logger;
         _optionRepository = optionRepository;
         _straddleRepository = straddleRepository;
         _strategyRepository = strategyRepository;
+        _orderRepository = orderRepository;
     }
     #region Methods
 
@@ -46,6 +48,61 @@ public class TraderWorker
     private double getBestStrike(OptionChain optionChain, double price) => optionChain.Strikes
         .OrderBy(s => s)
         .FirstOrDefault(s => s > price);
+
+    private async Task createNewStraddleAsync(LongStraddle straddle, Container container)
+    {
+        DbOption put = new()
+        {
+            LastTradeDate = straddle.ExpirationDate,
+            Strike = (decimal)straddle.Strike,
+            OptionType = OptionType.Put,
+            FutureId = container.Future.Id,
+        };
+
+        if (_connector.TryRequestOption(put, container.Future) == false)
+        {
+            _logger.LogError("Cant request Put");
+            return;
+        }
+
+        DbOption call = new()
+        {
+            LastTradeDate = straddle.ExpirationDate,
+            Strike = (decimal)straddle.Strike,
+            OptionType = OptionType.Call,
+            FutureId = container.Future.Id,
+        };
+
+        if (_connector.TryRequestOption(call, container.Future) == false)
+        {
+            _logger.LogError("cant requst Call");
+            return;
+        }
+
+        #region проверка на то, есть ли в базе данных опцион. Если да, то используем его
+        var db_put = _optionRepository.GetOptionBuyConId(put.ConId);
+        if (db_put == null)
+            _ = await _optionRepository.CreateAsync(put);
+        else
+            put = db_put;
+
+        var db_call = _optionRepository.GetOptionBuyConId(call.ConId);
+        if (db_call == null)
+            _ = await _optionRepository.CreateAsync(call);
+        else
+            call = db_call;
+        #endregion
+
+        await _straddleRepository.CreateAsync(straddle);
+
+        var put_strategy = await straddle.CreatAndAddStrategyAsync(put, straddle.Id, _strategyRepository);
+        put_strategy.Start(_connector,_strategyRepository, _orderRepository);
+
+        var call_strategy = await straddle.CreatAndAddStrategyAsync(call, straddle.Id, _strategyRepository);
+        call_strategy.Start(_connector, _strategyRepository, _orderRepository);
+
+        container.AddStraddle(straddle);
+    }
     #endregion
 
     #region PublicMethods
@@ -55,7 +112,7 @@ public class TraderWorker
         {
             _workingContainers.Add(container);
         }
-        container.Start(_connector);
+        container.Start(_connector, _strategyRepository, _orderRepository);
     }
 
     public void StopContainer(Container container)
@@ -98,62 +155,10 @@ public class TraderWorker
             straddle = new LongStraddle
             {
                 ExpirationDate = best_option_chain.ExpirationDate,
-                Strike = best_strike
+                Strike = best_strike,
+                ContainerId = container.Id,
             };
-
-            DbOption put = new()
-            {
-                LastTradeDate = best_option_chain.ExpirationDate,
-                Strike = (decimal)best_strike,
-                OptionType = OptionType.Put,
-                FutureId = container.Future.Id,
-            };
-
-            if (_connector.TryRequestOption(put, container.Future) == false)
-            {
-                _logger.LogError("Cant request Put");
-                return;
-            }
-
-            DbOption call = new()
-            {
-                LastTradeDate = best_option_chain.ExpirationDate,
-                Strike = (decimal)best_strike,
-                OptionType = OptionType.Call,
-                FutureId = container.Future.Id,
-            };
-
-            if (_connector.TryRequestOption(call, container.Future) == false)
-            {
-                _logger.LogError("cant requst Call");
-                return;
-            }
-
-            #region проверка на то, есть ли в базе данных опцион. Если да, то используем его
-            var db_put = _optionRepository.GetOptionBuyConId(put.ConId);
-            if (db_put == null)
-                _ = await _optionRepository.CreateAsync(put);
-            else
-                put = db_put;
-
-            var db_call = _optionRepository.GetOptionBuyConId(call.ConId);
-            if (db_call == null)
-                _ = await _optionRepository.CreateAsync(call);
-            else
-                call = db_call;
-            #endregion
-
-            await _straddleRepository.CreateAsync(straddle);
-
-            var put_strategy = await straddle.CreatAndAddStrategyAsync(put, _strategyRepository); 
-            put_strategy.Start(_connector);
-
-            var call_strategy = await straddle.CreatAndAddStrategyAsync(call, _strategyRepository); 
-            call_strategy.Start(_connector);
-
-            container.AddStraddle(straddle);
-
-            
+            await createNewStraddleAsync(straddle, container);
         }
         else if (straddle.IsOpen())
         {

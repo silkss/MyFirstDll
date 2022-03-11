@@ -12,5 +12,6 @@ public class StraddleRepository : BaseRepository<LongStraddle>
 
     }
 
-    protected override bool _Contains(DbSet<LongStraddle> set, LongStraddle entity) => set.Find(entity.Id) != null;
+    protected override bool _Contains(List<LongStraddle> entities, LongStraddle entity) =>
+        entities.Any(e => e.Id == entity.Id);
 }
