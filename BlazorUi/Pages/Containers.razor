@@ -4,6 +4,8 @@
 
 <h3>Containers</h3>
 
+@inject NavigationManager NavigationManager
+
 @inject ContainersRepository _ContainersRepository
 @inject IConnector _Connector
 @inject TraderWorker _TradeWorker
@@ -22,6 +24,7 @@
                     <th>Local symbol</th>
                     <th>Account</th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +41,9 @@
                         {
                             <td><button class="btn btn-success" @onclick="(() => startContainer(container))">Start</button></td>
                         }
+                        <td>
+                            <button class="btn btn-success" @onclick="(() => NavigateToContainerDetailsComponent(container.Id))">Details</button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -65,6 +71,11 @@
             _loadingContainers = false;
         }
     }
+    
+    private void NavigateToContainerDetailsComponent(int containerId)
+    {
+        NavigationManager.NavigateTo("containerdetails/"+containerId);
+    }
 
     private void startContainer(Container container)
     {
@@ -77,4 +88,6 @@
     {
         _TradeWorker.StopContainer(container);
     }
+
+
 }
