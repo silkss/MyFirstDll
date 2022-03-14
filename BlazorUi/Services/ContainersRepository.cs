@@ -23,6 +23,7 @@ public class ContainersRepository : BaseRepository<Container>
                     .ThenInclude(future => future.Options)
                     .Include(container => container.LongStraddles)
                     .ThenInclude(straddle => straddle.OptionStrategies)
+                    .ThenInclude(strategy => strategy.StrategyOrders)
                     .ToListAsync();
             }
         }

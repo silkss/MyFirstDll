@@ -1,0 +1,32 @@
+﻿@using DataLayer.Models
+<div class="row">
+	<div class="card">
+		<div class="card-header">
+			<div class="row">
+				<div class="col">
+					<em>Straddle:</em> @Straddle.ExpirationDate - @Straddle.Strike - @Straddle.StraddleLogic
+				</div>
+				<div class="col">
+					<button class="btn btn-info" @onclick="(() => _collapsed = !_collapsed)">
+						+
+					</button>
+				</div>
+			</div>
+		</div>
+		@if(!_collapsed)
+		{
+			<div class="card-body">
+				@foreach (var strategy in Straddle.OptionStrategies)
+				{
+					<OptionStrategyInfo Strategy=strategy/>
+				}
+			</div>
+		}
+	</div>
+</div>
+@code {
+	[Parameter]
+	public LongStraddle Straddle { get; set; }
+
+	private bool _collapsed = true;
+}

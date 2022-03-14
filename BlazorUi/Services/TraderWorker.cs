@@ -1,6 +1,7 @@
 ﻿using Connectors.Enums;
 using Connectors.Interfaces;
 using Connectors.Models.Instruments;
+using DataLayer.Enums;
 using DataLayer.Models;
 using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
@@ -106,13 +107,14 @@ public class TraderWorker
     #endregion
 
     #region PublicMethods
+
     public void StartContainer(Container container)
     {
         if (!_workingContainers.Contains(container))
         {
             _workingContainers.Add(container);
         }
-        container.Start(_connector, _strategyRepository, _orderRepository);
+        container.Start(_connector, _straddleRepository, _strategyRepository, _orderRepository);
     }
 
     public void StopContainer(Container container)
@@ -159,15 +161,30 @@ public class TraderWorker
                 ContainerId = container.Id,
             };
             await createNewStraddleAsync(straddle, container);
+            return;
         }
-        else if (straddle.IsOpen())
+        else if (straddle.StraddleLogic == StrategyLogic.OpenPoition)
         {
             return;
         }
+        else if (straddle.StraddleLogic == StrategyLogic.ClosePostion)
+		{
+            straddle.StraddleLogic = StrategyLogic.ClosePostion;
+		}
     }
 
-    public void SignalOnClose(string symbol, double price)
+    public void SignalOnClose(string symbol, double price, string account)
     {
+        if (_connector.IsConnected == false) return;
+
+        var container = getContainer(symbol, account);
+        if (container == null || container.Future == null)
+        {
+            _logger.LogError($"No opened containers with symbol {symbol} and account {account}. Or this container dont have future");
+            return;
+        }
+
+        container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
     }
     #endregion
 

@@ -13,6 +13,8 @@ namespace DataLayer.Models;
 
 public class LongStraddle : IEntity
 {
+    #region Props
+
     #region Data base references
     public int Id { get; set; }
 
@@ -25,20 +27,50 @@ public class LongStraddle : IEntity
 
     #endregion
 
-    #region Methods 
+    #region PublicProps
 
-    #region PublicMethods
     public DateTime ExpirationDate { get; set; }
     public double Strike { get; set; }
-    public void Start(IConnector connector, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
+
+    #region Straddle Logic
+
+    private StrategyLogic _straddleLogic;
+	private IRepository<LongStraddle>? _straddleRepository;
+
+	public StrategyLogic StraddleLogic
+	{
+        get => _straddleLogic;
+		set 
+        {
+            _straddleLogic = value;
+            OptionStrategies.ForEach(s => s.StrategyLogic = StraddleLogic);
+            if (_straddleRepository != null)
+            {
+                _straddleRepository.UpdateAsync(this);
+            }
+        }
+	}
+
+    #endregion
+
+    #endregion
+
+    #endregion
+
+    #region Methods
+
+    #region PublicMethods
+
+    public void Start(IConnector connector,IRepository<LongStraddle> straddleRepository, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
+        _straddleRepository = straddleRepository;
         foreach (var optionstrategy in OptionStrategies)
         {
             optionstrategy.Start(connector, repository, orderRepository);
         }
     }
     public void Work(string account)
-    { 
+    {
         foreach (var strategy in OptionStrategies)
         {
             strategy.Work(account);
@@ -62,8 +94,6 @@ public class LongStraddle : IEntity
 
         return option_strategy;
     }
-    public bool IsOpen() => !OptionStrategies
-        .Any(os => os.StrategyLogic == StrategyLogic.ClosePostion);
     #endregion
 
     #endregion

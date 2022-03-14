@@ -65,7 +65,7 @@ app.MapGet("/api/mcapi", async (string symbol, double price, string account, str
     if (type == "OPEN")
         await worker.SignalOnOpenAsync(symbol, price, account);
     else if (type == "CLOSE")
-        worker.SignalOnClose(symbol, price);
+        worker.SignalOnClose(symbol, price, account);
 });
 
 app.Run();

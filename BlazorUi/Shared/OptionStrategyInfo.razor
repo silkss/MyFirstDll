@@ -1,0 +1,35 @@
+﻿<div class="row">
+	<div class="card">
+		<div class="card-header">
+			<div class="row">
+				<div class="col">
+					<em>Strategy:</em>
+					Volume:<em>@Strategy.Volume</em> -
+					Position:<em>@Strategy.Position</em> -
+					Logic:<em>@Strategy.StrategyLogic</em>
+				</div>
+				<div class="col">
+					<button class="btn btn-info" @onclick="(() => _collapsed = !_collapsed)">
+						+
+					</button>
+				</div>
+			</div>		
+		</div>	
+		@if (!_collapsed)
+		{
+			<div class="card-body">
+				@foreach (var order in Strategy.StrategyOrders)
+				{
+					<OrderInfo Order=order></OrderInfo>
+				}
+			</div>
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public OptionStrategy Strategy{ get; set; }
+
+	private bool _collapsed = true;
+}

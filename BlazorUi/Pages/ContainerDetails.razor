@@ -1,9 +1,17 @@
 ﻿@page "/containerdetails/{Id:int}"
 
+
 @inject ContainersRepository _containersRepository
 
-<h3>Container: @Id</h3>
+<h3>Container: @Id, @_container.Account, @_container.Future.LocalSymbol</h3>
 <p>Number of straddles: @_container.LongStraddles.Count()</p>
+
+<div class="row">
+	@foreach (var straddle in _container.LongStraddles)
+	{
+		<StraddleInfo Straddle=straddle/>
+	}	
+</div>
 
 @code {
 	[Parameter]

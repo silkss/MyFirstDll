@@ -10,5 +10,5 @@ public class BaseStrategy : IEntity
     public int Volume { get; set; }
     public int Position { get; set; }
     public Direction Direction { get; set; }
-    public StrategyLogic StrategyLogic { get; set; }
+    public virtual StrategyLogic StrategyLogic { get; set; }
 }

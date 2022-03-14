@@ -1,9 +1,12 @@
-﻿using Connectors.Interfaces;
+﻿using Connectors.Enums;
+using Connectors.Interfaces;
+using DataLayer.Enums;
 using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Strategies;
 
@@ -12,24 +15,57 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     #region Props
 
     #region PublicProps
+
     #region DB
+
     #region Instrument
+
     public int? OptionId { get; set; }
     public DbOption Option { get; set; }
+
     #endregion
+
     #region Straddle
+
     public int? LongStraddleId { get; set; }
-
     public LongStraddle LongStraddle { get; set; }
-    #endregion
-    #region Orders
-    public List<DbOrder> StrategyOrders { get; set; } = new();
-    #endregion
-    #endregion
+
     #endregion
 
-    #region _privateProps
-    private DbOrder? _openOrder;
+    #region Orders
+
+    public List<DbOrder> StrategyOrders { get; set; } = new();
+
+	#region StrategyLogic
+
+	private StrategyLogic _strategyLogic;
+	public override StrategyLogic StrategyLogic 
+    {
+        get => _strategyLogic;
+        set
+        {
+            _strategyLogic = value;
+            if (_repository != null)
+            {
+                _repository.UpdateAsync(this);
+            }
+        }
+    }
+
+    #endregion
+
+    [NotMapped]
+    public Direction CloseDirection => Direction == Direction.Buy ? Direction.Sell : Direction.Buy;
+
+	#endregion
+
+	#endregion
+
+	#endregion
+
+	#region _privateProps
+
+	private DbOrder? _openOrder;
     private IRepository<OptionStrategy>? _repository;
     private IRepository<DbOrder>? _orderRepository;
 
@@ -54,12 +90,13 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     {
         switch (StrategyLogic)
         {
-            case Enums.StrategyLogic.OpenPoition when _openOrder == null:
+            case StrategyLogic.OpenPoition when _openOrder == null:
                 openPositionLogic(account);
                 break;
-            case Enums.StrategyLogic.ClosePostion:
+            case StrategyLogic.ClosePostion when _openOrder == null:
+                closePositionLogic(account);
                 break;
-            case Enums.StrategyLogic.Done:
+            case StrategyLogic.Done:
                 break;
         }
     }
@@ -81,10 +118,6 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
             _orderRepository.CreateAsync(_openOrder);
         }
         _openOrder = null;
-        /*
-         * необходимо сохранять изменения стратегии и 
-         * ордера.
-         */
     }
 
     public void OnCanceled(int orderId)
@@ -122,6 +155,26 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
             }
         }
     }
+    private void closePositionLogic(string account)
+	{
+        if (Position != 0)
+		{
+            if (Option != null)
+			{
+                _openOrder = new DbOrder
+                {
+                    Direction = CloseDirection,
+                    Account = account,
+                    TotalQuantity = Math.Abs(Position),
+                    OptionStrategyId = Id
+                };
+                if (!Option.SendOrder(_openOrder, this))
+                {
+                    _openOrder = null;
+                }
+            }
+		}
+	}
     #endregion
 
     #endregion
