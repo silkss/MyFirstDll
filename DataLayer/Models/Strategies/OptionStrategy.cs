@@ -106,7 +106,10 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
 
-        Position = _openOrder.FilledQuantity;
+        if (_openOrder.Direction == Direction)
+            Position = _openOrder.FilledQuantity;
+        else if (_openOrder.Direction == CloseDirection)
+            Position -= _openOrder.FilledQuantity;
 
         if (_repository != null)
         {
@@ -117,6 +120,7 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         {
             _orderRepository.CreateAsync(_openOrder);
         }
+
         _openOrder = null;
     }
 
@@ -135,6 +139,7 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     #endregion
 
     #region privateMethods
+
     private void openPositionLogic(string account)
     {
         if (Volume > Math.Abs(Position))
@@ -175,6 +180,7 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
             }
 		}
 	}
+
     #endregion
 
     #endregion
