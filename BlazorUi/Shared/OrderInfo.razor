@@ -1,28 +1,26 @@
 ﻿<div class="row">
-	<div class="card">
-		<div class="card-header">
-			<div class="row">
-				<div class="col">
-					<em>Order:</em>
-					Filled:@Order.FilledQuantity -
-					Add here PlaceDate
-				</div>
-				<div class="col">
-					<button class="btn btn-info" @onclick="(()=>_collapsed = !_collapsed)">
-						+
-					</button>
-				</div>
+	<button class="btn btn-info btn-sm" @onclick="(()=>_collapsed = !_collapsed)">
+		<div class="row">
+			<div class="col">
+				Filled:@Order.FilledQuantity
+			</div>
+			<div class="col">
+				Total:@Order.TotalQuantity
+			</div>
+			<div class="col">
+				@Order.Direction
 			</div>
 		</div>
-		@if (!_collapsed)
-		{
-			<div class="card-body">
-				<p>TotalQuantity:@Order.TotalQuantity</p>
-				<p>FilledQuantity:@Order.FilledQuantity</p>
-				<p>AvgFilledPrice:@Order.AvgFilledPrice</p>
-			</div>
-		}
-	</div>
+	</button>
+	@if (!_collapsed)
+	{
+		<div>
+			<p>TotalQuantity: @Order.TotalQuantity</p>
+			<p>FilledQuantity: @Order.FilledQuantity</p>
+			<p>AvgFilledPrice: @Order.AvgFilledPrice</p>
+			<p>Commision: @Order.Commission</p>
+		</div>
+	}
 </div>
 
 @code {

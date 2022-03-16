@@ -1,23 +1,22 @@
 ﻿<div class="row">
-	<div class="card">
-		<div class="card-header">
+	<div class="row">
+		<button class="btn btn-danger btn-sm" @onclick="(()=>_collapsed = !_collapsed)">
 			<div class="row">
 				<div class="col">
-					<em>Strategy:</em>
-					Volume:<em>@Strategy.Volume</em> -
-					Position:<em>@Strategy.Position</em> -
-					Logic:<em>@Strategy.StrategyLogic</em>
+					Volume:<em>@Strategy.Volume</em> 
 				</div>
 				<div class="col">
-					<button class="btn btn-info" @onclick="(() => _collapsed = !_collapsed)">
-						+
-					</button>
+					Position:<em>@Strategy.Position</em>
+				</div>
+				<div class="col">
+					Logic:<em>@Strategy.StrategyLogic</em>
 				</div>
 			</div>
-		</div>
+		</button>
 		@if (!_collapsed)
 		{
-			<div class="card-body">
+			<div class="row">
+				<h6>Orders:</h6>
 				@foreach (var order in Strategy.StrategyOrders)
 				{
 					<OrderInfo Order=order></OrderInfo>

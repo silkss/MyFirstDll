@@ -1,21 +1,23 @@
 ﻿@using DataLayer.Models
 <div class="row">
-	<div class="card">
-		<div class="card-header">
+	<div class="row">
+		<button class="btn btn-secondary" @onclick="(()=>_collapsed=!_collapsed)">
 			<div class="row">
 				<div class="col">
-					<em>Straddle:</em> @Straddle.ExpirationDate - @Straddle.Strike - @Straddle.StraddleLogic
+					@Straddle.ExpirationDate
 				</div>
 				<div class="col">
-					<button class="btn btn-info" @onclick="(() => _collapsed = !_collapsed)">
-						+
-					</button>
+					@Straddle.Strike
+				</div>
+				<div class="col">
+					@Straddle.StraddleLogic
 				</div>
 			</div>
-		</div>
+		</button>
 		@if(!_collapsed)
 		{
-			<div class="card-body">
+			<div class="row">
+				<h5>Strategies:</h5>
 				@foreach (var strategy in Straddle.OptionStrategies)
 				{
 					<OptionStrategyInfo Strategy=strategy/>
