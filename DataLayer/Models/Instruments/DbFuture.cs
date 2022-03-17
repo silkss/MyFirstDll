@@ -39,9 +39,6 @@ public class DbFuture : IFuture, IEntity
     #region Db references
     public List<Container> Containers { get; set; } = new();
 
-    public event Action<TickType, double> Tick = delegate { };
-
-    public List<DbOption> Options { get; set; } = new();
     #endregion
     #endregion
 
@@ -52,6 +49,7 @@ public class DbFuture : IFuture, IEntity
 
     #region Methods
     #region PublicMethods
+    public event Action<TickType, double> Tick = delegate { };
     public void SetConnector(IConnector connector)
     {
         _connector = connector;

@@ -12,4 +12,5 @@ public class FutureRepository : BaseRepository<DbFuture>
     }
 
     protected override bool _Contains(List<DbFuture> entities, DbFuture entity) => entities.Any(item => item.ConId == entity.ConId);
+
 }

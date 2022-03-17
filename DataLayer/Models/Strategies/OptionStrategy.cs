@@ -20,14 +20,14 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
 
     #region Instrument
 
-    public int? OptionId { get; set; }
+    public int OptionId { get; set; }
     public DbOption Option { get; set; }
 
     #endregion
 
     #region Straddle
 
-    public int? LongStraddleId { get; set; }
+    public int LongStraddleId { get; set; }
     public LongStraddle LongStraddle { get; set; }
 
     #endregion
@@ -119,6 +119,7 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (_orderRepository != null && _openOrder != null)
         {
             _orderRepository.CreateAsync(_openOrder);
+            StrategyOrders.Add(_openOrder);
         }
 
         _openOrder = null;

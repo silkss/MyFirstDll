@@ -20,7 +20,6 @@ public class TraderWorker
     private readonly StrategyRepository _strategyRepository;
     private readonly OrderRepository _orderRepository;
     private readonly List<Container> _workingContainers = new();
-
     private TimeSpan _period = new(9, 0, 0, 0);
     #endregion
     
@@ -57,7 +56,6 @@ public class TraderWorker
             LastTradeDate = straddle.ExpirationDate,
             Strike = (decimal)straddle.Strike,
             OptionType = OptionType.Put,
-            FutureId = container.Future.Id,
         };
 
         if (_connector.TryRequestOption(put, container.Future) == false)
@@ -71,7 +69,6 @@ public class TraderWorker
             LastTradeDate = straddle.ExpirationDate,
             Strike = (decimal)straddle.Strike,
             OptionType = OptionType.Call,
-            FutureId = container.Future.Id,
         };
 
         if (_connector.TryRequestOption(call, container.Future) == false)
@@ -154,6 +151,7 @@ public class TraderWorker
         var straddle = container.HasStraddleInCollection(best_option_chain.ExpirationDate, best_strike);
         if (straddle == null)
         {
+            container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
             straddle = new LongStraddle
             {
                 ExpirationDate = best_option_chain.ExpirationDate,

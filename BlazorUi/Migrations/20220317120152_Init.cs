@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BlazorUi.Migrations
 {
-    public partial class _3 : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -32,31 +32,11 @@ namespace BlazorUi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Containers",
+                name: "Options",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FutureId = table.Column<int>(type: "int", nullable: true),
-                    Account = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Containers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Containers_Futures_FutureId",
-                        column: x => x.FutureId,
-                        principalTable: "Futures",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DbOption",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FutureId = table.Column<int>(type: "int", nullable: true),
                     ConId = table.Column<int>(type: "int", nullable: false),
                     Strike = table.Column<decimal>(type: "decimal(18,10)", nullable: false),
                     TradingClass = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -74,12 +54,28 @@ namespace BlazorUi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbOption", x => x.Id);
+                    table.PrimaryKey("PK_Options", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Containers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FutureId = table.Column<int>(type: "int", nullable: false),
+                    Account = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastTradeDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Containers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DbOption_Futures_FutureId",
+                        name: "FK_Containers_Futures_FutureId",
                         column: x => x.FutureId,
                         principalTable: "Futures",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -88,9 +84,10 @@ namespace BlazorUi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ContainerId = table.Column<int>(type: "int", nullable: true),
+                    ContainerId = table.Column<int>(type: "int", nullable: false),
                     ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Strike = table.Column<double>(type: "float", nullable: false)
+                    Strike = table.Column<double>(type: "float", nullable: false),
+                    StraddleLogic = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -99,34 +96,64 @@ namespace BlazorUi.Migrations
                         name: "FK_Straddles_Containers_ContainerId",
                         column: x => x.ContainerId,
                         principalTable: "Containers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "OptionStrategy",
+                name: "OptionStrategies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OptionId = table.Column<int>(type: "int", nullable: true),
-                    LongStraddleId = table.Column<int>(type: "int", nullable: true),
+                    OptionId = table.Column<int>(type: "int", nullable: false),
+                    LongStraddleId = table.Column<int>(type: "int", nullable: false),
+                    StrategyLogic = table.Column<int>(type: "int", nullable: false),
                     Volume = table.Column<int>(type: "int", nullable: false),
                     Position = table.Column<int>(type: "int", nullable: false),
-                    Direction = table.Column<int>(type: "int", nullable: false),
-                    StrategyLogic = table.Column<int>(type: "int", nullable: false)
+                    Direction = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OptionStrategy", x => x.Id);
+                    table.PrimaryKey("PK_OptionStrategies", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OptionStrategy_DbOption_OptionId",
+                        name: "FK_OptionStrategies_Options_OptionId",
                         column: x => x.OptionId,
-                        principalTable: "DbOption",
+                        principalTable: "Options",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_OptionStrategy_Straddles_LongStraddleId",
+                        name: "FK_OptionStrategies_Straddles_LongStraddleId",
                         column: x => x.LongStraddleId,
                         principalTable: "Straddles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OptionStrategyId = table.Column<int>(type: "int", nullable: true),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    Account = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LmtPrice = table.Column<decimal>(type: "decimal(18,10)", nullable: false),
+                    Direction = table.Column<int>(type: "int", nullable: false),
+                    OrderType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
+                    FilledQuantity = table.Column<int>(type: "int", nullable: false),
+                    Commission = table.Column<decimal>(type: "decimal(18,10)", nullable: false),
+                    AvgFilledPrice = table.Column<decimal>(type: "decimal(18,10)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_OptionStrategies_OptionStrategyId",
+                        column: x => x.OptionStrategyId,
+                        principalTable: "OptionStrategies",
                         principalColumn: "Id");
                 });
 
@@ -136,19 +163,19 @@ namespace BlazorUi.Migrations
                 column: "FutureId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbOption_FutureId",
-                table: "DbOption",
-                column: "FutureId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OptionStrategy_LongStraddleId",
-                table: "OptionStrategy",
+                name: "IX_OptionStrategies_LongStraddleId",
+                table: "OptionStrategies",
                 column: "LongStraddleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OptionStrategy_OptionId",
-                table: "OptionStrategy",
+                name: "IX_OptionStrategies_OptionId",
+                table: "OptionStrategies",
                 column: "OptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_OptionStrategyId",
+                table: "Orders",
+                column: "OptionStrategyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Straddles_ContainerId",
@@ -159,10 +186,13 @@ namespace BlazorUi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "OptionStrategy");
+                name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "DbOption");
+                name: "OptionStrategies");
+
+            migrationBuilder.DropTable(
+                name: "Options");
 
             migrationBuilder.DropTable(
                 name: "Straddles");

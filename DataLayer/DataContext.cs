@@ -21,7 +21,11 @@ public class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<DbOption>()
+            .HasMany(option => option.OptionStrategies)
+            .WithOne(optionStrategy => optionStrategy.Option)
+            .OnDelete(DeleteBehavior.ClientCascade);
+
         modelBuilder.Entity<DbFuture>()
             .Property(f => f.MinTick)
             .HasColumnType("decimal(18,10)");

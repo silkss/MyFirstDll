@@ -20,22 +20,21 @@ public abstract class BaseRepository<T> : IRepository<T>
         _dataContextFactory = dataContextFactory;
     }
 
-    public async Task<bool> CreateAsync(T entity)
+    public async virtual Task<T?> CreateAsync(T entity)
     {
         using (var _dataContext = _dataContextFactory.CreateDbContext())
         {
-            if (entity == null) return false;
-            if (_Contains(_entities, entity)) return false;
+            if (entity == null) return null;
+            if (_Contains(_entities, entity)) return null;
             var set = _dataContext.Set<T>();
-
 
             set.Add(entity);
             await _dataContext.SaveChangesAsync();
+            //var new_entity = _dataContext.Set<T>().First(t => t.Id == entity.Id);
             _entities.Add(entity);
         }
-        return true;
+        return entity;
     }
-
     protected abstract bool _Contains(List<T> entities, T entity);
 
     /// <summary>

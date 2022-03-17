@@ -88,9 +88,6 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FutureId")
-                        .HasColumnType("int");
-
                     b.Property<int>("InstumentType")
                         .HasColumnType("int");
 
@@ -129,8 +126,6 @@ namespace BlazorUi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FutureId");
-
                     b.ToTable("Options");
                 });
 
@@ -142,7 +137,7 @@ namespace BlazorUi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("ContainerId")
+                    b.Property<int>("ContainerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpirationDate")
@@ -173,7 +168,7 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FutureId")
+                    b.Property<int>("FutureId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastTradeDate")
@@ -246,10 +241,10 @@ namespace BlazorUi.Migrations
                     b.Property<int>("Direction")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LongStraddleId")
+                    b.Property<int>("LongStraddleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OptionId")
+                    b.Property<int>("OptionId")
                         .HasColumnType("int");
 
                     b.Property<int>("Position")
@@ -270,20 +265,13 @@ namespace BlazorUi.Migrations
                     b.ToTable("OptionStrategies");
                 });
 
-            modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
-                {
-                    b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany("Options")
-                        .HasForeignKey("FutureId");
-
-                    b.Navigation("Future");
-                });
-
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
                 {
                     b.HasOne("DataLayer.Models.Strategies.Container", "Container")
                         .WithMany("LongStraddles")
-                        .HasForeignKey("ContainerId");
+                        .HasForeignKey("ContainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Container");
                 });
@@ -292,7 +280,9 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
                         .WithMany("Containers")
-                        .HasForeignKey("FutureId");
+                        .HasForeignKey("FutureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Future");
                 });
@@ -310,11 +300,15 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.LongStraddle", "LongStraddle")
                         .WithMany("OptionStrategies")
-                        .HasForeignKey("LongStraddleId");
+                        .HasForeignKey("LongStraddleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DataLayer.Models.Instruments.DbOption", "Option")
-                        .WithMany()
-                        .HasForeignKey("OptionId");
+                        .WithMany("OptionStrategies")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
 
                     b.Navigation("LongStraddle");
 
@@ -324,8 +318,11 @@ namespace BlazorUi.Migrations
             modelBuilder.Entity("DataLayer.Models.Instruments.DbFuture", b =>
                 {
                     b.Navigation("Containers");
+                });
 
-                    b.Navigation("Options");
+            modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
+                {
+                    b.Navigation("OptionStrategies");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>

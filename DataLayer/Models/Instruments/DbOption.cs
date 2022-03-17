@@ -4,6 +4,7 @@ using Connectors.Interfaces;
 using DataLayer.Interfaces;
 using DataLayer.Models.Strategies;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataLayer.Models.Instruments;
@@ -13,12 +14,11 @@ public class DbOption : IOption, IEntity
     #region Props
 
     #region PublicProps
+
     #region DbReferences
     public int Id { get; set; }
-    #region Future
-    public int? FutureId { get; set; }
-    public DbFuture Future { get; set; }
-    #endregion
+
+    public List<OptionStrategy> OptionStrategies { get; set; } = new();
     #endregion
 
     public int ConId { get; set; }

@@ -19,7 +19,7 @@ public class LongStraddle : IEntity
     public int Id { get; set; }
 
     #region Container
-    public int? ContainerId { get; set; }
+    public int ContainerId { get; set; }
     public Container Container { get; set; }
     #endregion
 

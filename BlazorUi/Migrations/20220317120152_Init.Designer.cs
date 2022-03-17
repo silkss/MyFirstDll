@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorUi.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220302171214_3")]
-    partial class _3
+    [Migration("20220317120152_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -90,9 +90,6 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FutureId")
-                        .HasColumnType("int");
-
                     b.Property<int>("InstumentType")
                         .HasColumnType("int");
 
@@ -131,9 +128,7 @@ namespace BlazorUi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FutureId");
-
-                    b.ToTable("DbOption");
+                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
@@ -144,11 +139,14 @@ namespace BlazorUi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("ContainerId")
+                    b.Property<int>("ContainerId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("StraddleLogic")
+                        .HasColumnType("int");
 
                     b.Property<double>("Strike")
                         .HasColumnType("float");
@@ -172,14 +170,66 @@ namespace BlazorUi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("FutureId")
+                    b.Property<int>("FutureId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("LastTradeDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FutureId");
 
                     b.ToTable("Containers");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.DbOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Account")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("AvgFilledPrice")
+                        .HasColumnType("decimal(18,10)");
+
+                    b.Property<decimal>("Commission")
+                        .HasColumnType("decimal(18,10)");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FilledQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("LmtPrice")
+                        .HasColumnType("decimal(18,10)");
+
+                    b.Property<int?>("OptionStrategyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionStrategyId");
+
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
@@ -193,10 +243,10 @@ namespace BlazorUi.Migrations
                     b.Property<int>("Direction")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LongStraddleId")
+                    b.Property<int>("LongStraddleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OptionId")
+                    b.Property<int>("OptionId")
                         .HasColumnType("int");
 
                     b.Property<int>("Position")
@@ -214,23 +264,16 @@ namespace BlazorUi.Migrations
 
                     b.HasIndex("OptionId");
 
-                    b.ToTable("OptionStrategy");
-                });
-
-            modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
-                {
-                    b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
-                        .WithMany()
-                        .HasForeignKey("FutureId");
-
-                    b.Navigation("Future");
+                    b.ToTable("OptionStrategies");
                 });
 
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
                 {
                     b.HasOne("DataLayer.Models.Strategies.Container", "Container")
                         .WithMany("LongStraddles")
-                        .HasForeignKey("ContainerId");
+                        .HasForeignKey("ContainerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Container");
                 });
@@ -239,20 +282,35 @@ namespace BlazorUi.Migrations
                 {
                     b.HasOne("DataLayer.Models.Instruments.DbFuture", "Future")
                         .WithMany("Containers")
-                        .HasForeignKey("FutureId");
+                        .HasForeignKey("FutureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Future");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.DbOrder", b =>
+                {
+                    b.HasOne("DataLayer.Models.Strategies.OptionStrategy", "OptionStrategy")
+                        .WithMany("StrategyOrders")
+                        .HasForeignKey("OptionStrategyId");
+
+                    b.Navigation("OptionStrategy");
                 });
 
             modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
                 {
                     b.HasOne("DataLayer.Models.LongStraddle", "LongStraddle")
                         .WithMany("OptionStrategies")
-                        .HasForeignKey("LongStraddleId");
+                        .HasForeignKey("LongStraddleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DataLayer.Models.Instruments.DbOption", "Option")
-                        .WithMany()
-                        .HasForeignKey("OptionId");
+                        .WithMany("OptionStrategies")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
 
                     b.Navigation("LongStraddle");
 
@@ -264,6 +322,11 @@ namespace BlazorUi.Migrations
                     b.Navigation("Containers");
                 });
 
+            modelBuilder.Entity("DataLayer.Models.Instruments.DbOption", b =>
+                {
+                    b.Navigation("OptionStrategies");
+                });
+
             modelBuilder.Entity("DataLayer.Models.LongStraddle", b =>
                 {
                     b.Navigation("OptionStrategies");
@@ -272,6 +335,11 @@ namespace BlazorUi.Migrations
             modelBuilder.Entity("DataLayer.Models.Strategies.Container", b =>
                 {
                     b.Navigation("LongStraddles");
+                });
+
+            modelBuilder.Entity("DataLayer.Models.Strategies.OptionStrategy", b =>
+                {
+                    b.Navigation("StrategyOrders");
                 });
 #pragma warning restore 612, 618
         }

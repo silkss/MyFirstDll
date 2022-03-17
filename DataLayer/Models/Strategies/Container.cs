@@ -25,7 +25,7 @@ public class Container : IEntity
     public int Id { get; set; }
 
     #region Future
-    public int? FutureId { get; set; }
+    public int FutureId { get; set; }
     public DbFuture Future { get; set; }
     #endregion
 
