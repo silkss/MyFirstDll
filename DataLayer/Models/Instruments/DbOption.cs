@@ -16,9 +16,11 @@ public class DbOption : IOption, IEntity
     #region PublicProps
 
     #region DbReferences
+
     public int Id { get; set; }
 
     public List<OptionStrategy> OptionStrategies { get; set; } = new();
+
     #endregion
 
     public int ConId { get; set; }
@@ -46,10 +48,13 @@ public class DbOption : IOption, IEntity
     public decimal TheorPrice { get; set; }
 
     public event Action<TickType> InstrumentChanged = delegate { };
+
     #endregion
 
     #region _privateProps
+
     private IConnector? _connector;
+
     #endregion
 
     #endregion
@@ -57,6 +62,7 @@ public class DbOption : IOption, IEntity
     #region Methods
 
     #region PublicMethods
+
     public void Notify(TickType type, double price)
     {
         switch (type)
@@ -80,20 +86,21 @@ public class DbOption : IOption, IEntity
     {
         if (_connector == null) return false;
         if (TheorPrice <= 0) return false;
-
-        order.OrderId = -1;
+        
+        order.OrderId = -1; 
         order.LmtPrice = TheorPrice;
         order.SetOrderHolder(orderHolder);
 
         _connector.SendOptionOrder(order, this);
-        return true; 
+        return true;
     }
 
     public void SetConnector(IConnector connector)
     {
         _connector = connector;
     }
+
     #endregion
 
-    #endregion 
+    #endregion
 }

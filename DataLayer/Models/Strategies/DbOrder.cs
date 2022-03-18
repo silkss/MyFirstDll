@@ -27,11 +27,15 @@ public class DbOrder : IOrder, IEntity
     public decimal Commission { get; set; }
     public decimal AvgFilledPrice { get; set; }
     public string? Status { get; set; }
+
+    public DateTime GeneratedTime { get; set; }
+    public DateTime ExecuteTime { get; set;  }
     #endregion
 
     #region _privateProps
     private IOrderHolder? _orderHolder;
     #endregion
+
     #endregion
 
     #region Methods

@@ -106,6 +106,8 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
 
+        _openOrder.ExecuteTime = DateTime.Now;
+
         if (_openOrder.Direction == Direction)
             Position = _openOrder.FilledQuantity;
         else if (_openOrder.Direction == CloseDirection)
@@ -153,6 +155,7 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
                     Account = account,
                     TotalQuantity = Volume - Math.Abs(Position),
                     OptionStrategyId = Id,
+                    GeneratedTime = DateTime.Now
                 };
                 if (!Option.SendOrder(_openOrder, this))
                 {
@@ -172,8 +175,10 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
                     Direction = CloseDirection,
                     Account = account,
                     TotalQuantity = Math.Abs(Position),
-                    OptionStrategyId = Id
+                    OptionStrategyId = Id,
+                    GeneratedTime = DateTime.Now
                 };
+
                 if (!Option.SendOrder(_openOrder, this))
                 {
                     _openOrder = null;
