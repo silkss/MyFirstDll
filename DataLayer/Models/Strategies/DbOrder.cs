@@ -17,7 +17,7 @@ public class DbOrder : IOrder, IEntity
 
     #endregion
 
-    public int OrderId { get; set; }
+    public int OrderId { get; set; } = -1;
     public string? Account { get; set; }
     public decimal LmtPrice { get; set; }
     public Direction Direction { get; set; }

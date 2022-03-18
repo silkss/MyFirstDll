@@ -87,14 +87,20 @@ public class DbOption : IOption, IEntity
         if (_connector == null) return false;
         if (TheorPrice <= 0) return false;
         
-        order.OrderId = -1; 
+        if (order.OrderId == -1)
+        {
+            order.SetOrderHolder(orderHolder);
+        }
         order.LmtPrice = TheorPrice;
-        order.SetOrderHolder(orderHolder);
 
         _connector.SendOptionOrder(order, this);
         return true;
     }
-
+    public void CancelOrder(int OrderId)
+    {
+        if (_connector == null) return;
+        _connector.CancelOrder(OrderId);
+    }
     public void SetConnector(IConnector connector)
     {
         _connector = connector;

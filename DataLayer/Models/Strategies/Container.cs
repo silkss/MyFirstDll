@@ -27,9 +27,11 @@ public class Container : IEntity
     #region Future
     public int FutureId { get; set; }
     public DbFuture Future { get; set; }
+
     #endregion
 
     public List<LongStraddle> LongStraddles { get; set; } = new();
+
     #endregion
 
     #region Public props
@@ -38,6 +40,7 @@ public class Container : IEntity
     public bool Started { get; private set; }
     public string Account { get; set; }
     public DateTime LastTradeDate { get; set; }
+
     #endregion
 
     #endregion
@@ -45,6 +48,7 @@ public class Container : IEntity
     #region Methods
 
     #region Private Methods
+
     private void onInstrumentChanged(TickType type, double price)
     {
         foreach (var straddle in LongStraddles)
@@ -52,6 +56,7 @@ public class Container : IEntity
             straddle.Work(Account);
         }
     }
+
     #endregion
 
     #region Public Methods
@@ -76,6 +81,10 @@ public class Container : IEntity
     public void Stop()
     {
         Started = false;
+        foreach (var straddle in LongStraddles)
+        {
+            straddle.Stop();
+        }
         Future.Tick -= onInstrumentChanged;
     }
 

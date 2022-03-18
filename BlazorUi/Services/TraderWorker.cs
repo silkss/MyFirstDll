@@ -167,7 +167,8 @@ public class TraderWorker
         }
         else if (straddle.StraddleLogic == StrategyLogic.ClosePostion)
 		{
-            straddle.StraddleLogic = StrategyLogic.ClosePostion;
+            container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
+            straddle.StraddleLogic = StrategyLogic.OpenPoition;
 		}
     }
 

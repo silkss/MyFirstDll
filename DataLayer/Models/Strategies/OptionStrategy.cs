@@ -49,6 +49,10 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
             {
                 _repository.UpdateAsync(this);
             }
+            if (_openOrder != null && Option != null)
+            {
+                Option.CancelOrder(_openOrder.OrderId);
+            }
         }
     }
 
@@ -125,6 +129,13 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         }
 
         _openOrder = null;
+    }
+    public void Stop()
+    {
+        if (Option == null) return;
+        if (_openOrder == null) return;
+
+        Option.CancelOrder(_openOrder.Id);
     }
 
     public void OnCanceled(int orderId)

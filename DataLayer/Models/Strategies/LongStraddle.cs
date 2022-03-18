@@ -6,7 +6,6 @@ using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataLayer.Models;
@@ -94,6 +93,15 @@ public class LongStraddle : IEntity
 
         return option_strategy;
     }
+
+    public void Stop()
+    {
+        foreach(var strategy in OptionStrategies)
+        {
+            strategy.Stop();
+        }
+    }
+
     #endregion
 
     #endregion

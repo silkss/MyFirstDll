@@ -349,15 +349,20 @@ public class IBConnector : DefaultEWrapper, IConnector
     #endregion
 
     #region Orders 
+
     public void SendOptionOrder(IOrder order, IOption option)
     {
         if (order.OrderId == -1)
         {
             order.OrderId = nextOrderId++;
+            OpenOrders.Add(order);
         }
 
-        OpenOrders.Add(order);
         ClientSocket.placeOrder(order.OrderId, option.ToIbContract(), order.ToIbOrder());
+    }
+    public void CancelOrder(int OrderId)
+    {
+        ClientSocket.cancelOrder(OrderId);
     }
     public override void orderStatus(int orderId, string status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld, double mktCapPrice)
     {
@@ -389,9 +394,11 @@ public class IBConnector : DefaultEWrapper, IConnector
             }
         }
     }
+    
     #endregion
 
     #region MarketData
+
     public override void tickPrice(int tickerId, int field, double price, TickAttrib attribs)
     {
         var type = GetTickTypeByField(field);
@@ -441,6 +448,7 @@ public class IBConnector : DefaultEWrapper, IConnector
         IBApi.TickType.DELAYED_LAST => Connectors.Enums.TickType.LastPrice,
         _ => null
     };
+
     #endregion
 
     #region MarketRule

@@ -18,6 +18,8 @@ public interface IConnector
     void CacheOption(IOption option);
     bool RemoveCachedOption(IOption option);
 
+    void CancelOrder(int OrderId);
+
     IEnumerable<IFuture> GetCachedFutures();
     IEnumerable<IOption> GetCachedOptions();
     IEnumerable<string> GetAccountList();
