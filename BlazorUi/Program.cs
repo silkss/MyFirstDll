@@ -41,9 +41,6 @@ builder.Services.AddDbContextFactory<DataContext>(options =>
 });
 #endregion
 
-#region Scoped
-
-#endregion
 
 var app = builder.Build();
 

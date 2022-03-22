@@ -454,11 +454,15 @@ public class IBConnector : DefaultEWrapper, IConnector
     #region MarketRule
     public override void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
     {
-        foreach (var option in CachedOptions)
+        lock (_optionCollectionLock)
         {
-            if (option.MarketRule == marketRuleId)
+            foreach (var option in CachedOptions)
             {
-                option.MinTick = (decimal)priceIncrements.Max(pi => pi.Increment);
+                if (option.MarketRule == marketRuleId)
+                {
+                    option.MinTick = (decimal)priceIncrements.Max(pi => pi.Increment);
+                    break;
+                }
             }
         }
         base.marketRule(marketRuleId, priceIncrements);
