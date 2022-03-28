@@ -302,6 +302,7 @@ public class IBConnector : DefaultEWrapper, IConnector
     }
 
     #region Add and Remove Instrument from Cache
+
     /// <summary>
     /// Добавляет в кешированые инструменты новый инструмент и запрашивает рыночные данные по нему.
     /// </summary>
@@ -467,6 +468,7 @@ public class IBConnector : DefaultEWrapper, IConnector
         }
         base.marketRule(marketRuleId, priceIncrements);
     }
+
     #endregion
 
     #region Errors

@@ -7,8 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder
+    .WebHost
+    .ConfigureKestrel(options => options.Listen(System.Net.IPAddress.Parse("192.168.0.3"), 5000));
+
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddServerSideBlazor();
 
 #region Singletons
@@ -56,6 +61,7 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+app.MapControllers();
 app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, TraderWorker worker) =>
 {
     if (type == "OPEN")
