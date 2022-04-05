@@ -1,4 +1,3 @@
-using BlazorUi.Data;
 using BlazorUi.Services;
 using Connectors.IB;
 using Connectors.Interfaces;
@@ -46,7 +45,6 @@ builder.Services.AddDbContextFactory<DataContext>(options =>
 });
 #endregion
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -62,12 +60,5 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.MapControllers();
-app.MapGet("/api/mcapi", async (string symbol, double price, string account, string type, TraderWorker worker) =>
-{
-    if (type == "OPEN")
-        await worker.SignalOnOpenAsync(symbol, price, account);
-    else if (type == "CLOSE")
-        worker.SignalOnClose(symbol, price, account);
-});
 
 app.Run();

@@ -91,7 +91,14 @@ public class DbOption : IOption, IEntity
         {
             order.SetOrderHolder(orderHolder);
         }
-        order.LmtPrice = TheorPrice;
+        if (order.Direction == Direction.Buy)
+        {
+            order.LmtPrice = TheorPrice + MinTick;
+        }
+        else
+        {
+            order.LmtPrice = TheorPrice - MinTick;
+        }
 
         _connector.SendOptionOrder(order, this);
         return true;
