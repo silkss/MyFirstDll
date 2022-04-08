@@ -10,8 +10,8 @@ public interface IConnector
     void Disconnect();
 
     //int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, IFuture parent);
-    int RequestFuture(string localSymbol);
-    bool TryRequestFuture(IFuture future);
+    int RequestFuture(string localSymbol, string exchange);
+    bool TryRequestFuture(IFuture future, string exchange);
     bool TryRequestOption(IOption option, IFuture parent);
     void CacheFuture(IFuture future);
     bool RemoveCachedFuture(IFuture future);
@@ -25,4 +25,5 @@ public interface IConnector
     IEnumerable<string> GetAccountList();
 
     void SendOptionOrder(IOrder order, IOption option);
+    IEnumerable<string> GetExchangeList();
 }

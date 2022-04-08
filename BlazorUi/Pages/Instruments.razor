@@ -15,6 +15,14 @@
         <input placeholder="type instrument local symbol" @bind="_localSymbol"/>
     </div>
     <div class="col">
+        <select @bind="_selectedExchange">
+            @foreach (var exchange in _Connector.GetExchangeList())
+            {
+                <option>@exchange</option>
+            }
+        </select>
+    </div>
+    <div class="col">
         <button class="btn btn-success" @onclick="AddFuture">Add</button>
     </div>
 }
@@ -54,9 +62,6 @@ else
                         <td>@future.Echange</td>
                         <td>
                             <select @bind="_selectedAccount">
-                                <option> 
-                                    Choos account
-                                </option>
                                 @foreach (var account in _accounts)
                                 {
                                     <option>
@@ -77,6 +82,7 @@ else
     private IList<DbFuture>? _futures;
     private IEnumerable<string> _accounts;
     private string _selectedAccount = string.Empty;
+    private string _selectedExchange = string.Empty;
     private string? _localSymbol;
     private bool _loadingFuture;
 
@@ -105,12 +111,14 @@ else
     private async Task AddFuture()
     {
         if (string.IsNullOrEmpty(_localSymbol)) return;
+        if (string.IsNullOrEmpty(_selectedExchange)) return;
         if (_loadingFuture) return;
         try
         {
             _loadingFuture = true;
             var fut = new DbFuture { LocalSymbol = _localSymbol };
-            if (_Connector.TryRequestFuture(fut))
+            
+            if (_Connector.TryRequestFuture(fut, _selectedExchange))
             {
                 await _FutureRepository.CreateAsync(fut);
             }

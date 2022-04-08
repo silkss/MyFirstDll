@@ -27,6 +27,7 @@ public class IBConnector : DefaultEWrapper, IConnector
     private readonly object _optionLock = new();
     private readonly Queue<(int, ContractDetails?)> _futureQueue = new();
     private readonly Queue<(int, ContractDetails?)> _optionQueue = new();
+    private readonly string[] _exchanges = { "GLOBEX", "NYMEX" };
 
     private object _optionCollectionLock = new();
     #endregion
@@ -39,6 +40,8 @@ public class IBConnector : DefaultEWrapper, IConnector
         get { return ClientSocket.IsConnected(); }
     }
 
+    public IEnumerable<string> GetExchangeList() => _exchanges;
+    
     public IBConnector()
     {
         var config = new IBConfig();
@@ -135,25 +138,25 @@ public class IBConnector : DefaultEWrapper, IConnector
     public IEnumerable<IFuture> GetCachedFutures() => CachedFutures;
     public IEnumerable<IOption> GetCachedOptions() => CachedOptions;
 
-    public int RequestFuture(string localSymbol)
+    public int RequestFuture(string localSymbol, string exchange)
     {
         var contract = new Contract()
         {
             LocalSymbol = localSymbol,
             SecType = "FUT",
-            Exchange = "GLOBEX",
+            Exchange = exchange,
             Currency = "USD"
         };
         var orderid = nextOrderId++;
         ClientSocket.reqContractDetails(orderid, contract);
         return orderid;
     }
-    public bool TryRequestFuture(IFuture future)
+    public bool TryRequestFuture(IFuture future, string exchange)
     {
         if (!ClientSocket.IsConnected())
             return false;
 
-        int req = RequestFuture(future.LocalSymbol);
+        int req = RequestFuture(future.LocalSymbol, exchange);
 
         ContractDetails? contractDetails = null;
         try
