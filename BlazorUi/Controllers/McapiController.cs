@@ -21,10 +21,10 @@ public class McapiController : ControllerBase
     {
         _logger.LogInformation($"{DateTime.Now} Symbol {symbol}, price {price}, account {account}, type {type}");
 
-        //if (type == "OPEN")
-        //    worker.SignalOnOpenAsync(symbol, price, account);
-        //else if (type == "CLOSE")
-        //    worker.SignalOnClose(symbol, price, account);
+        if (type == "OPEN")
+            _worker.SignalOnOpenAsync(symbol, price, account);
+        else if (type == "CLOSE")
+            _worker.SignalOnClose(symbol, price, account);
         return Ok();
     }
 }

@@ -3,14 +3,27 @@
 		<button class="btn btn-danger btn-sm" @onclick="(()=>_collapsed = !_collapsed)">
 			<div class="row">
 				<div class="col">
+					Symbol:<em>@Strategy.Option.LocalSymbol</em>
+				</div>
+				<div class="col">
 					Volume:<em>@Strategy.Volume</em> 
 				</div>
 				<div class="col">
 					Position:<em>@Strategy.Position</em>
 				</div>
 				<div class="col">
+					PnL:<em>@Strategy.PnL</em>
+				</div>
+				<div class="col">
+					$PnL:<em>@Strategy.PnlInCurrency.ToString("0.00")</em>
+				</div>
+				<div class="col">
+					Commission:<em>@Strategy.Commission.ToString("0.00")</em>
+				</div>
+				<div class="col">
 					Logic:<em>@Strategy.StrategyLogic</em>
 				</div>
+				
 			</div>
 		</button>
 		@if (!_collapsed)
@@ -31,4 +44,9 @@
 	public OptionStrategy Strategy{ get; set; }
 
 	private bool _collapsed = true;
+
+	protected override void OnInitialized()
+	{
+		Strategy.RecalcPnlAndCommision();
+	}
 }

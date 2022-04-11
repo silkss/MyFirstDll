@@ -61,9 +61,16 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     [NotMapped]
     public Direction CloseDirection => Direction == Direction.Buy ? Direction.Sell : Direction.Buy;
 
-	#endregion
+    #endregion
 
-	#endregion
+    #endregion
+
+    [NotMapped]
+    public decimal PnL { get; private set; }
+    [NotMapped]
+    public decimal Commission { get; private set; }
+    [NotMapped]
+    public decimal PnlInCurrency { get; private set; }
 
 	#endregion
 
@@ -81,6 +88,21 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
 
     #region PublicMethods
 
+    public void RecalcPnlAndCommision()
+    {
+        PnL = 0m;
+        if (StrategyOrders.Count == 0) return;
+
+        foreach (var order in StrategyOrders)
+        {
+            PnL = order.Direction == Direction.Buy ?
+                PnL - order.AvgFilledPrice * order.FilledQuantity :
+                PnL + order.AvgFilledPrice * order.FilledQuantity;
+
+            Commission += order.Commission;
+        }
+        PnlInCurrency = PnL * Option.Multiplier;
+    }
     public void Start(IConnector connector, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         _repository = repository;
@@ -89,7 +111,6 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (Option != null)
             connector.CacheOption(Option);
     }
-
     public void Work(string account)
     {
         switch (StrategyLogic)
@@ -104,7 +125,6 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
                 break;
         }
     }
-
     public void OnOrderFilled(int orderId)
     {
         if (_openOrder == null) return;
@@ -137,14 +157,12 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
 
         Option.CancelOrder(_openOrder.Id);
     }
-
     public void OnCanceled(int orderId)
     {
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
         _openOrder = null;
     }
-
     public void onFilledQunatityChanged(int orderId)
     {
         //throw new NotImplementedException();

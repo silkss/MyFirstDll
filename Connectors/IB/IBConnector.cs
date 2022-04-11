@@ -1,11 +1,10 @@
 ﻿using Connectors.Enums;
 using Connectors.IB.Enums;
 using Connectors.Interfaces;
-using Connectors.Orders;
 using IBApi;
 using System.Globalization;
-using Connectors.Utils;
 using Connectors.Models.Instruments;
+using Microsoft.Extensions.Logging;
 
 namespace Connectors.IB;
 
@@ -19,7 +18,7 @@ public class IBConnector : DefaultEWrapper, IConnector
 
     private IbDataTypes mktDataType;
 
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
     private readonly EReaderSignal Signal;
     private readonly EClientSocket ClientSocket;
 
@@ -42,25 +41,25 @@ public class IBConnector : DefaultEWrapper, IConnector
 
     public IEnumerable<string> GetExchangeList() => _exchanges;
     
-    public IBConnector()
+    public IBConnector(ILogger<IBConnector> logger)
     {
+        _logger = logger;
+
         var config = new IBConfig();
         ip = config.Ip;
         port = config.Port;
         clientid = config.ClientId;
         mktDataType = config.DataType;
 
-        logger = new DebugLogger();
-
         Signal = new EReaderMonitorSignal();
         ClientSocket = new EClientSocket(this, Signal);
 
-        logger.AddLog(LogType.Info, "Connector created");
+        _logger.LogInformation("Connector created");
     }
 
     public void Connect()
     {
-        logger.AddLog(LogType.Info, "Connecting...");
+        _logger.LogInformation("Connecting...");
 
         ClientSocket.eConnect(ip, port, clientid);
         var reader = new EReader(ClientSocket, Signal);
@@ -101,7 +100,7 @@ public class IBConnector : DefaultEWrapper, IConnector
     public void Disconnect()
     {
         ClientSocket.eDisconnect();
-        logger.AddLog(LogType.Warm, "Disconnected");
+        _logger.LogInformation($"Disconnected at {DateTime.Now}");
     }
 
     public override void managedAccounts(string accountsList)
@@ -477,7 +476,7 @@ public class IBConnector : DefaultEWrapper, IConnector
     #region Errors
     public override void error(int id, int errorCode, string errorMsg)
     {
-        logger.AddLog(LogType.Warm, $"Error: {id}, {errorCode}, {errorMsg}");
+        _logger.LogError($"Error: {id}, {errorCode}, {errorMsg}");
         switch (errorCode)
         {
             case 140:
@@ -516,12 +515,12 @@ public class IBConnector : DefaultEWrapper, IConnector
 
     public override void error(string str)
     {
-        logger.AddLog(LogType.Warm, $"Error: {str}");
+        _logger.LogError($"Error: {str}");
     }
 
     public override void error(Exception e)
     {
-        logger.AddLog(LogType.Crit, e.Message);
+        _logger.LogError(e.Message);
         throw e;
     }
     #endregion
