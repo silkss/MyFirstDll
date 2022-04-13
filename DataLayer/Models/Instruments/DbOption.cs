@@ -81,7 +81,6 @@ public class DbOption : IOption, IEntity
                 break;
         }
     }
-
     public bool SendOrder(IOrder order, IOrderHolder orderHolder)
     {
         if (_connector == null) return false;
@@ -93,11 +92,11 @@ public class DbOption : IOption, IEntity
         }
         if (order.Direction == Direction.Buy)
         {
-            order.LmtPrice = TheorPrice + MinTick;
+            order.LmtPrice = TheorPrice + 2 * MinTick;
         }
         else
         {
-            order.LmtPrice = TheorPrice - MinTick;
+            order.LmtPrice = TheorPrice - 2 * MinTick;
         }
 
         _connector.SendOptionOrder(order, this);

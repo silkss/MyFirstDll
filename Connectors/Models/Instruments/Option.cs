@@ -9,9 +9,7 @@ public class Option : Instrument
     public decimal Strike { get; set; }
     public string TradingClass { get; set; }
     public OptionType OptionType { get; set; }
-
     public int FutureId { get; set; }
-
     public Contract ToIbContract() => new Contract()
     {
         ConId = this.Id,
