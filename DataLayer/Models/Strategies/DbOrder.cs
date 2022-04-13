@@ -58,7 +58,10 @@ public class DbOrder : IOrder, IEntity
     }
     public void Submitted()
     {
-
+        if (_orderHolder != null)
+        {
+            _orderHolder.OnSubmit(OrderId);
+        }
     }
 
     public void SetOrderHolder(IOrderHolder orderHolder)

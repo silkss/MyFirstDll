@@ -35,7 +35,7 @@
                         <td>@container.Account</td>
                         @if (container.Started)
                         {
-                            <td><button class="btn btn-danger" >Stop</button></td>
+                            <td><button class="btn btn-danger" @onclick="(()=> stopContainer(container))">Stop</button></td>
                         }
                         else
                         {
@@ -43,6 +43,11 @@
                         }
                         <td>
                             <button class="btn btn-success" @onclick="(() => NavigateToContainerDetailsComponent(container.Id))">Details</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger">
+                                <span class="oi oi-trash"></span>
+                            </button>
                         </td>
                     </tr>
                 }
@@ -71,7 +76,7 @@
             _loadingContainers = false;
         }
     }
-    
+
     private void NavigateToContainerDetailsComponent(int containerId)
     {
         NavigationManager.NavigateTo("containerdetails/"+containerId);
@@ -89,5 +94,7 @@
         _TradeWorker.StopContainer(container);
     }
 
-
+    private void removeContainer(Container container)
+    {
+    }
 }

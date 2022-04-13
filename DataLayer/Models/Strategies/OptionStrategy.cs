@@ -91,6 +91,8 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     public void RecalcPnlAndCommision()
     {
         PnL = 0m;
+        Commission = 0m;
+
         if (StrategyOrders.Count == 0) return;
 
         foreach (var order in StrategyOrders)
@@ -162,6 +164,12 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
         _openOrder = null;
+    }
+    public void OnSubmit(int orderId)
+    {
+        if (_openOrder == null) return;
+        if (_openOrder.OrderId != orderId) return;
+        //DO some staff
     }
     public void onFilledQunatityChanged(int orderId)
     {

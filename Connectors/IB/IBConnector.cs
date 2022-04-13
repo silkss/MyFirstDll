@@ -116,16 +116,6 @@ public class IBConnector : DefaultEWrapper, IConnector
         nextOrderId = orderId;
     }
 
-    #region HistoricalData
-    public override void historicalData(int reqId, Bar bar)
-    {
-        base.historicalData(reqId, bar);
-    }
-    public override void historicalDataUpdate(int reqId, Bar bar)
-    {
-        base.historicalDataUpdate(reqId, bar);
-    }
-    #endregion
 
     #region Instruments
     private readonly List<IFuture> CachedFutures = new();
@@ -464,7 +454,7 @@ public class IBConnector : DefaultEWrapper, IConnector
                 if (option.MarketRule == marketRuleId)
                 {
                     option.MinTick = (decimal)priceIncrements.Max(pi => pi.Increment);
-                    break;
+                    continue;
                 }
             }
         }
@@ -476,9 +466,22 @@ public class IBConnector : DefaultEWrapper, IConnector
     #region Errors
     public override void error(int id, int errorCode, string errorMsg)
     {
-        _logger.LogError($"Error: {id}, {errorCode}, {errorMsg}");
+       
         switch (errorCode)
         {
+            case 10167:
+            case 10197:
+
+                break;
+            case 110: // wrong order price
+                if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder orderwithwrongprice)
+                {
+
+                    OpenOrders.Remove(orderwithwrongprice);
+                    orderwithwrongprice.Canceled();
+                    _logger.LogError($"{DateTime.Now} Order with {id} have wrong price. Cancel it");
+                }
+                break;
             case 140:
                 if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder order)
                 {
@@ -504,11 +507,13 @@ public class IBConnector : DefaultEWrapper, IConnector
             case 202:
                 if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder canceledorder)
                 {
+                    _logger.LogError($"Error: {id}, {errorCode}, {errorMsg}");
                     OpenOrders.Remove(canceledorder);
                     canceledorder.Canceled();
                 }
                 break;
             default:
+                _logger.LogError($"Error: {id}, {errorCode}, {errorMsg}");
                 break;
         }
     }
