@@ -37,9 +37,11 @@ public class TraderWorker
         _strategyRepository = strategyRepository;
         _orderRepository = orderRepository;
     }
+
     #region Methods
 
     #region privateMethods
+
     private Container? getContainer(string symbol, string account) =>
         _workingContainers.FirstOrDefault(c => c.Future.LocalSymbol == symbol && c.Account == account);
     private OptionChain? getBestOptionChain(DbFuture future) => future.OptionChain
@@ -101,6 +103,7 @@ public class TraderWorker
 
         container.AddStraddle(straddle);
     }
+
     #endregion
 
     #region PublicMethods
@@ -185,6 +188,7 @@ public class TraderWorker
 
         container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
     }
+
     #endregion
 
     #endregion

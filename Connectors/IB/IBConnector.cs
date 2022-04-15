@@ -11,9 +11,9 @@ namespace Connectors.IB;
 public class IBConnector : DefaultEWrapper, IConnector
 {
     #region _privateProps
-    private string ip;
-    private int port;
-    private int clientid;
+    private string _ip;
+    private int _port;
+    private int _clientid;
     private int nextOrderId;
 
     private IbDataTypes mktDataType;
@@ -46,9 +46,9 @@ public class IBConnector : DefaultEWrapper, IConnector
         _logger = logger;
 
         var config = new IBConfig();
-        ip = config.Ip;
-        port = config.Port;
-        clientid = config.ClientId;
+        _ip = config.Ip;
+        _port = config.Port;
+        _clientid = config.ClientId;
         mktDataType = config.DataType;
 
         Signal = new EReaderMonitorSignal();
@@ -59,9 +59,18 @@ public class IBConnector : DefaultEWrapper, IConnector
 
     public void Connect()
     {
+        Connect(_ip, _port, _clientid);
+    }
+    public void Connect(string ip, int port, int clientId)
+    {
+        if (ClientSocket.IsConnected())
+        {
+            _logger.LogInformation("Connector now is connected");
+            return;
+        }
         _logger.LogInformation("Connecting...");
 
-        ClientSocket.eConnect(ip, port, clientid);
+        ClientSocket.eConnect(ip, port, clientId);
         var reader = new EReader(ClientSocket, Signal);
         reader.Start();
 
@@ -96,13 +105,11 @@ public class IBConnector : DefaultEWrapper, IConnector
 
         CachedOptions.ForEach(option => ClientSocket.reqMktData(option.ConId, option.ToIbContract(), string.Empty, false, false, null));
     }
-
     public void Disconnect()
     {
         ClientSocket.eDisconnect();
         _logger.LogInformation($"Disconnected at {DateTime.Now}");
     }
-
     public override void managedAccounts(string accountsList)
     {
         foreach (var acc in accountsList.Trim().Split(','))

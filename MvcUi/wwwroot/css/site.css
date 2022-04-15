@@ -1,18 +1,10 @@
-html {
-  font-size: 14px;
+:root{
+    --background: rgba(0, 214, 170, .75);
 }
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
+/* Putin ! */
+*, *::after, *::before{
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
 }

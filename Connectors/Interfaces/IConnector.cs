@@ -7,6 +7,7 @@ public interface IConnector
 
     bool IsConnected { get; }
     void Connect();
+    void Connect(string ip, int port, int clientId);
     void Disconnect();
 
     //int RequestOption(DateTime LastTradeDate, double Strike, OptionType type, IFuture parent);
