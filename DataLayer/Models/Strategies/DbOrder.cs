@@ -10,9 +10,10 @@ public class DbOrder : IOrder, IEntity
     #region Props
 
     #region PublicProps
+
     #region Db
     public int Id { get; set; }
-    public int? OptionStrategyId { get; set; }
+    public int OptionStrategyId { get; set; }
     public OptionStrategy OptionStrategy { get; set; }
 
     #endregion

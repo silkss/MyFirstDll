@@ -4,40 +4,32 @@ using Microsoft.Extensions.Logging;
 using MvcUi.Models;
 using System.Diagnostics;
 
-namespace MvcUi.Controllers
+namespace MvcUi.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly ILogger<HomeController> _logger;
+    private readonly IConnector _connector;
+
+    public HomeController(ILogger<HomeController> logger, IConnector connector)
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IConnector _connector;
+        _logger = logger;
+        _connector = connector;
+    }
 
-        public HomeController(ILogger<HomeController> logger, IConnector connector)
-        {
-            _logger = logger;
-            _connector = connector;
-        }
+    public IActionResult Index()
+    {
+        return View();
+    }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+    public IActionResult Privacy()
+    {
+        return View();
+    }
 
-        [HttpPost]
-        public IActionResult Connect(string ip, int port, int clientId)
-        {
-            _connector.Connect(ip, port, clientId);
-            return View("Index");
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

@@ -1,0 +1,34 @@
+﻿@model IEnumerable<DbFuture>;
+@{
+}
+<h1>Insruments</h1>
+<form method="post" asp-area="" asp-controller="Instruments" asp-action="Add">
+	<lable>Local symbol</lable>
+	<input type="text" name="localSymbol"/>
+	<lable>Exchange</lable>
+	<input type="text" name="exchange" />
+	<input type="submit" value="Add" />
+</form>
+<table>
+	<thead>
+		<tr>
+			<th>Id</th>
+			<th>Local symbol.</th>
+			<th>Exchange.</th>
+			<th></th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var obj in Model)
+		{
+		   <tr>
+			   <td>@obj.Id</td>
+			   <td>@obj.LocalSymbol</td>
+			   <td>@obj.Echange</td>
+			   <td><a asp-area="" asp-controller="Instruments" asp-action="Info" asp-route-id="@obj.Id">Info</a></td>
+			   <td><a asp-area="" asp-controller="Instruments" asp-action="Delete" asp-route-id="@obj.Id">Delete</a></td>
+		   </tr>
+		}
+	</tbody>
+</table>

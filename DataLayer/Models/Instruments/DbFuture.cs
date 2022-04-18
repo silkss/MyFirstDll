@@ -12,6 +12,7 @@ namespace DataLayer.Models.Instruments;
 public class DbFuture : IFuture, IEntity
 {
     #region Props
+
     #region PublicProps
     [NotMapped]
     public List<OptionChain> OptionChain { get; } = new();
@@ -45,6 +46,7 @@ public class DbFuture : IFuture, IEntity
     #region _privateProps
     private IConnector? _connector;
     #endregion
+
     #endregion
 
     #region Methods

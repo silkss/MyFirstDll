@@ -1,8 +1,12 @@
 using Connectors.IB;
 using Connectors.Interfaces;
+using DataLayer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MvcUi.Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IConnector, IBConnector>();
+builder.Services.AddSingleton<FutureRepository>();
+
+builder.Services.AddDbContextFactory<DataContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
+    {
+        b.MigrationsAssembly("MvcUi");
+    });
+});
 
 var app = builder.Build();
 
