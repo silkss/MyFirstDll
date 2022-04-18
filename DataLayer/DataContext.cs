@@ -49,6 +49,10 @@ public class DataContext : DbContext
         modelBuilder.Entity<DbOrder>()
             .Property(o => o.LmtPrice)
             .HasColumnType("decimal(18,10)");
+
+        modelBuilder.Entity<Container>()
+            .Property(c => c.WantedPnl)
+            .HasColumnType("decimal(18,2)");
     }
     // The following configures EF to create a Sqlite database file in the
     // special "local" folder for your platform.

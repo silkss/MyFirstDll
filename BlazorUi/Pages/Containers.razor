@@ -7,11 +7,53 @@
 @inject NavigationManager NavigationManager
 
 @inject ContainersRepository _ContainersRepository
+@inject FutureRepository _FutureRepository;
 @inject IConnector _Connector
 @inject TraderWorker _TradeWorker
 
+@if (_Connector.IsConnected && _futures != null)
+{
+    <div class="row">
+        <button class="btn btn-primary" @onclick="ShowHideCreateForm">Create new Container</button>
+    </div>
+    @if (_creating)
+    {
+        <form>
+            <div class="form-group">
+                <lable for="selectedFuture">Futures</lable>
+                <select class="form-control" id="selectedFuture" @bind="_selectedFutureId">
+                    <option value="0">Select future</option>
+                    @foreach (var fut in _futures)
+                    {
+                        <option value="@fut.Id">@fut.LocalSymbol</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <lable for="selectedAccount">Account</lable>
+                <select class="form-control" id="selectedAccount" @bind="_selectedAccount">
+                    @foreach(var account in _Connector.GetAccountList())
+                    {
+                        <option>@account</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="wantedPnl">Wanted PnL in currency</label>
+                <input type="text" class="form-control" id="wantedPnl" @bind="_wantedPnl">
+            </div>
+            <div class="form-group">
+                <label for="keepAliveInDays">Keep alive in days</label>
+                <input type="text" class="form-control" id="keepAliveInDays" @bind="_keepAliveInDays">
+            </div>
+            @if (_selectedFutureId > 0 && string.IsNullOrEmpty(_selectedAccount))
+            {
+                <button class="btn btn-primary" @onclick="CreateNewContainer">Submit</button>
+            }
+        </form>
+    }
+}
 <div class="row">
-    <p><em>Instruments if Db</em></p>
     @if (_loadingContainers)
     {
         <p><em>Loading...</em></p>
@@ -60,6 +102,12 @@
     private bool _loadingContainers;
     private IList<Container> _containers;
     private IList<DbFuture> _futures;
+    private bool _creating = false;
+
+    private string _selectedAccount = string.Empty;
+    private int? _selectedFutureId;
+    private int _keepAliveInDays;
+    private decimal _wantedPnl;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,6 +116,8 @@
         {
             _loadingContainers = true;
             _containers = await _ContainersRepository.GetAllAsync();
+            _futures = await _FutureRepository.GetAllAsync();
+
             if (_containers == null)
                 _containers = new List<Container>();
         }
@@ -96,5 +146,30 @@
 
     private void removeContainer(Container container)
     {
+    }
+
+    private void ShowHideCreateForm()
+    {
+        _creating = !_creating;
+    }
+
+    private async Task CreateNewContainer()
+    {
+        if (!_selectedFutureId.HasValue || string.IsNullOrEmpty(_selectedAccount)) return;
+
+        var container = new Container
+        {
+            FutureId = _selectedFutureId.Value,
+            WantedPnl = _wantedPnl,
+            Account = _selectedAccount,
+            KeepAliveInDays = _keepAliveInDays,
+        };
+
+        await _ContainersRepository.CreateAsync(container);
+    }
+
+    private void RemoveContainer(Container container)
+    {
+        //_ContainersRepository
     }
 }

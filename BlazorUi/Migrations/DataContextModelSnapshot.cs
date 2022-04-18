@@ -140,6 +140,9 @@ namespace BlazorUi.Migrations
                     b.Property<int>("ContainerId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
 
@@ -171,8 +174,14 @@ namespace BlazorUi.Migrations
                     b.Property<int>("FutureId")
                         .HasColumnType("int");
 
+                    b.Property<int>("KeepAliveInDays")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LastTradeDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("WantedPnl")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

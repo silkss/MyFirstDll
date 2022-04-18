@@ -7,6 +7,7 @@ using DataLayer.Models.Strategies.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace DataLayer.Models.Strategies;
 
@@ -36,10 +37,10 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
 
     public List<DbOrder> StrategyOrders { get; set; } = new();
 
-	#region StrategyLogic
+    #region StrategyLogic
 
-	private StrategyLogic _strategyLogic;
-	public override StrategyLogic StrategyLogic 
+    private StrategyLogic _strategyLogic;
+    public override StrategyLogic StrategyLogic
     {
         get => _strategyLogic;
         set
@@ -66,13 +67,28 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     #endregion
 
     [NotMapped]
-    public decimal PnL { get; private set; }
-    [NotMapped]
-    public decimal Commission { get; private set; }
-    [NotMapped]
-    public decimal PnlInCurrency { get; private set; }
+    public decimal PnL => StrategyOrders
+        .Sum(o => o.Direction == Direction.Buy ?
+            -o.FilledQuantity * o.AvgFilledPrice :
+            o.FilledQuantity * o.AvgFilledPrice);
 
-	#endregion
+    [NotMapped]
+    public decimal Commission => StrategyOrders.Sum(o => o.Commission);
+    [NotMapped]
+    public decimal PnlInCurrency => Option == null ? 0m : PnL * Option.Multiplier;
+    [NotMapped]
+    public decimal UnrealizedPnlInCurrency
+    {
+        get
+        {
+            if (Option == null) return 0m;
+            if (Option.TheorPrice == 0) return 0m;
+            if (Position > 0) return (PnL + Option.TheorPrice) * Option.Multiplier;
+            if (Position < 0) return (PnL - Option.TheorPrice) * Option.Multiplier;
+            return 0m;
+        }
+    }
+    #endregion
 
 	#region _privateProps
 
@@ -87,24 +103,6 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     #region Methods
 
     #region PublicMethods
-
-    public void RecalcPnlAndCommision()
-    {
-        PnL = 0m;
-        Commission = 0m;
-
-        if (StrategyOrders.Count == 0) return;
-
-        foreach (var order in StrategyOrders)
-        {
-            PnL = order.Direction == Direction.Buy ?
-                PnL - order.AvgFilledPrice * order.FilledQuantity :
-                PnL + order.AvgFilledPrice * order.FilledQuantity;
-
-            Commission += order.Commission;
-        }
-        PnlInCurrency = PnL * Option.Multiplier;
-    }
     public void Start(IConnector connector, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         _repository = repository;

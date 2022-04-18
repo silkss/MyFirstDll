@@ -6,6 +6,8 @@ using DataLayer.Models.Instruments;
 using DataLayer.Models.Strategies;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataLayer.Models;
@@ -29,17 +31,17 @@ public class LongStraddle : IEntity
     #region PublicProps
 
     public DateTime ExpirationDate { get; set; }
+    public DateTime CreatedDate { get; set; }
     public double Strike { get; set; }
-
     #region Straddle Logic
 
     private StrategyLogic _straddleLogic;
-	private IRepository<LongStraddle>? _straddleRepository;
+    private IRepository<LongStraddle>? _straddleRepository;
 
-	public StrategyLogic StraddleLogic
-	{
+    public StrategyLogic StraddleLogic
+    {
         get => _straddleLogic;
-		set 
+        set
         {
             _straddleLogic = value;
             OptionStrategies.ForEach(s => s.StrategyLogic = StraddleLogic);
@@ -48,7 +50,12 @@ public class LongStraddle : IEntity
                 _straddleRepository.UpdateAsync(this);
             }
         }
-	}
+    }
+
+    [NotMapped]
+    public decimal PnLInCurrency => StraddleLogic == StrategyLogic.ClosePostion ?
+        OptionStrategies.Sum(os => os.PnlInCurrency) :
+        OptionStrategies.Sum(os => os.UnrealizedPnlInCurrency);
 
     #endregion
 
@@ -60,7 +67,7 @@ public class LongStraddle : IEntity
 
     #region PublicMethods
 
-    public void Start(IConnector connector,IRepository<LongStraddle> straddleRepository, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
+    public void Start(IConnector connector, IRepository<LongStraddle> straddleRepository, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         _straddleRepository = straddleRepository;
         foreach (var optionstrategy in OptionStrategies)
@@ -96,7 +103,7 @@ public class LongStraddle : IEntity
 
     public void Stop()
     {
-        foreach(var strategy in OptionStrategies)
+        foreach (var strategy in OptionStrategies)
         {
             strategy.Stop();
         }

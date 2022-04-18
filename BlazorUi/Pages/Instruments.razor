@@ -8,14 +8,15 @@
 
 <h3>Instruments</h3>
 
+
 <div class="row">
 @if (_Connector.IsConnected)
 {
     <div class="col">
-        <input placeholder="type instrument local symbol" @bind="_localSymbol"/>
+        <input class="form-control" placeholder="type instrument local symbol" @bind="_localSymbol"/>
     </div>
     <div class="col">
-        <select @bind="_selectedExchange">
+        <select class="form-select" @bind="_selectedExchange">
             @foreach (var exchange in _Connector.GetExchangeList())
             {
                 <option>@exchange</option>
@@ -34,6 +35,8 @@ else
 }
 </div>
 
+<hr />
+
 <div class="row">
     <p><em>Instruments in Db</em></p>
     @if (_futures == null)
@@ -49,7 +52,6 @@ else
                     <th>Currency</th>
                     <th>Last Trade Date</th>
                     <th>Echange</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -60,23 +62,14 @@ else
                         <td>@future.Currency</td>
                         <td>@future.LastTradeDate.ToShortDateString()</td>
                         <td>@future.Echange</td>
-                        <td>
-                            <select @bind="_selectedAccount">
-                                @foreach (var account in _accounts)
-                                {
-                                    <option>
-                                        @account
-                                    </option>
-                                }
-                            </select>
-                        </td>
-                        <td><button class="btn btn-success" @onclick="(() => createContainer(future))">Create container</button> </td>
                     </tr>
                 }
             </tbody>
         </table>
     }
 </div>
+
+<CreateContainerDialog/>
 
 @code {
     private IList<DbFuture>? _futures;

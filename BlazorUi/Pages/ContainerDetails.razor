@@ -1,10 +1,30 @@
 ﻿@page "/containerdetails/{Id:int}"
 
-
 @inject ContainersRepository _containersRepository
+@if (!_updating)
+{
+	<h3>
+		Container: @_container.Account, @_container.Future.LocalSymbol, @_container.WantedPnl, @_container.KeepAliveInDays
+		<button class="btn btn-danger" @onclick="(() => _updating = !_updating )">
+			<span class="oi oi-pencil"></span>
+		</button>
+	</h3>
+}
+else
+{
+	<form>
+		<div class="form-group">
+			<label for="wantedPnl">Wanted PnL</label>
+			<input class="form-control" type="text" id="wantedPnl" @bind="_newWantedPnl">
+		</div>
+		<div class="form-group">
+			<label for="keepAliveInDays">Keep alive in Days</label>
+			<input class="form-control" type="text" id="keepAliveInDays" @bind="_newKeepAliveInDays">
+		</div>
 
-<h3>Container: @Id, @_container.Account, @_container.Future.LocalSymbol</h3>
-
+		<button class="btn btn-primary" @onclick="UpdateAsync">Update</button>
+	</form>
+}
 <div class="row">
 	<h3>Strdalles:</h3>
 	@foreach (var straddle in _container.LongStraddles)
@@ -17,10 +37,23 @@
 	[Parameter]
 	public int Id { get; set; }
 
+	private bool _updating = false;
 	private Container _container;
-
+	private int _newKeepAliveInDays;
+	private decimal _newWantedPnl;
 	protected override void OnInitialized()
 	{
 		_container = _containersRepository.GetById(Id);
+		_newKeepAliveInDays = _container.KeepAliveInDays;
+		_newWantedPnl = _container.WantedPnl;
 	}
+
+	private async Task UpdateAsync()
+	{
+		_container.WantedPnl = _newWantedPnl;
+		_container.KeepAliveInDays = _newKeepAliveInDays;
+		await _containersRepository.UpdateAsync(_container);
+		_updating = false;
+	}
+
 }

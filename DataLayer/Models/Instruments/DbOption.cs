@@ -92,11 +92,11 @@ public class DbOption : IOption, IEntity
         }
         if (order.Direction == Direction.Buy)
         {
-            order.LmtPrice = TheorPrice + 2 * MinTick;
+            order.LmtPrice = TheorPrice + 3 * MinTick;
         }
         else
         {
-            order.LmtPrice = TheorPrice - 2 * MinTick;
+            order.LmtPrice = TheorPrice - 3 * MinTick;
         }
 
         _connector.SendOptionOrder(order, this);

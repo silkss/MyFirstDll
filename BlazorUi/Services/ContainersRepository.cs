@@ -5,13 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorUi.Services;
 
-public class ContainersRepository : BaseRepository<Container>
+public class ContainersRepository //: BaseRepository<Container>
 {
-    public ContainersRepository(IDbContextFactory<DataContext> dataContextFactory) : base(dataContextFactory)
+    private readonly IDbContextFactory<DataContext> _dataContextFactory;
+    private List<Container> _entities = new();
+    public ContainersRepository(IDbContextFactory<DataContext> dataContextFactory)// : base(dataContextFactory)
     {
-
+        _dataContextFactory = dataContextFactory;
     }
-    public override async Task<IList<Container>> GetAllAsync()
+    public async Task<IList<Container>> GetAllAsync()
     {
         if (_entities.Count == 0)
         {
@@ -31,25 +33,37 @@ public class ContainersRepository : BaseRepository<Container>
         }
         return _entities;
     }
-    public override async Task<Container?> CreateAsync(Container entity)
+    public Container? GetById(int id) => GetAllAsync().Result.SingleOrDefault(c => c.Id == id);
+    public async Task<Container?> CreateAsync(Container entity)
     {
         Container? new_entity = null;
+        if (entity == null) return null;
+        if (_entities.Any(c => c.Account == entity.Account && c.FutureId == entity.FutureId)) return null;
+
         using (var _dataContext = _dataContextFactory.CreateDbContext())
         {
-            if (entity == null) return null;
-            if (_Contains(_entities, entity)) return null;
             _dataContext.Set<Container>().Add(entity);
 
             await _dataContext.SaveChangesAsync();
+
+            //это необходимо для того, чтобы сразу получить ссылку на родительский инструмент в контейнере
             new_entity = _dataContext.Set<Container>()
                 .Include(container => container.Future)
-                .SingleOrDefault(t => t.Id == entity.Id);
+                .SingleOrDefault(cont => cont.Id == entity.Id);
             if (new_entity != null)
                 _entities.Add(new_entity);
         }
         return new_entity;
     }
 
-    protected override bool _Contains(List<Container> entities, Container entity) =>
-        entities.Any(c => c.Account == entity.Account && c.FutureId == entity.FutureId);
+    public async Task UpdateAsync(Container source)
+    {
+        using (var datacontex = _dataContextFactory.CreateDbContext())
+        {
+            var target = datacontex.Set<Container>().Single(c => c.Id == source.Id);
+            target.WantedPnl = source.WantedPnl;
+            target.KeepAliveInDays = source.KeepAliveInDays;
+            await datacontex.SaveChangesAsync();
+        }
+    }
 }

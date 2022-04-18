@@ -1,9 +1,11 @@
 ﻿using Connectors.Enums;
 using Connectors.Interfaces;
+using DataLayer.Enums;
 using DataLayer.Interfaces;
 using DataLayer.Models.Instruments;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -39,6 +41,8 @@ public class Container : IEntity
     [NotMapped]
     public bool Started { get; private set; }
     public string Account { get; set; }
+    public decimal WantedPnl { get; set; }
+    public int KeepAliveInDays { get; set; }
     public DateTime LastTradeDate { get; set; }
 
     #endregion
@@ -60,12 +64,12 @@ public class Container : IEntity
     #endregion
 
     #region Public Methods
+
     public void AddStraddle(LongStraddle straddle)
     {
         straddle.ContainerId = Id;
         LongStraddles.Add(straddle);
     }
-
     public void Start(IConnector connector, IRepository<LongStraddle> straddleRepository, IRepository<OptionStrategy> strategyRepository, IRepository<DbOrder> orderRepository)
     {
         connector.CacheFuture(Future);
@@ -77,7 +81,6 @@ public class Container : IEntity
         
         Future.Tick += onInstrumentChanged;
     }
-
     public void Stop()
     {
         Started = false;
@@ -87,27 +90,25 @@ public class Container : IEntity
         }
         Future.Tick -= onInstrumentChanged;
     }
-
-    public LongStraddle? ChooseBestOptionChain(double price)
+    public bool HasOpenStraddleWithPnl()
     {
-        var optionChain = Future.OptionChain
-            .OrderByDescending(oc => oc.ExpirationDate)
-            .Reverse()
-            .FirstOrDefault(oc => _period > (oc.ExpirationDate - DateTime.Now));
+        if (LongStraddles == null) return false;
+        
+        var open_straddle = LongStraddles.SingleOrDefault(ls => ls.StraddleLogic == StrategyLogic.OpenPoition);
+        /* Если нет открытого стрэдлла, то надо создать новый */
+        if (open_straddle == null) return false;
 
-        if (optionChain == null) return null;
+        /* Если стрэдл был создан больше чем Определное колво дней, нужен новый */
+        if ((DateTime.Now - open_straddle.CreatedDate).TotalDays > KeepAliveInDays) return false;
 
-        var strike = optionChain.Strikes.OrderByDescending(s => s)
-            .Reverse()
-            .First(s => s > price);
+        /* если открытый стрэдл накопил необходимый ПиУ, нужен нвоый! */
+        if (open_straddle.PnLInCurrency > WantedPnl) return false;
 
-        return new LongStraddle { ExpirationDate = optionChain.ExpirationDate, Strike = strike };
+        /* Во всех остальных случаях можно использовать существующий стрэддл! */
+        return true;
     }
     public LongStraddle? HasStraddleInCollection(DateTime expirationdate, double price) =>
         LongStraddles?.Find(ls => ls.ExpirationDate == expirationdate && ls.Strike == price);
-
-    public void CloseStraddle(double price)
-    { }
     #endregion
 
     #endregion

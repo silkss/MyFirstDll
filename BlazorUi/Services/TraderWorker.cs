@@ -134,6 +134,12 @@ public class TraderWorker
             return;
         }
 
+        if (container.HasOpenStraddleWithPnl())
+        {
+            _logger.LogInformation($"{DateTime.Now} Container {symbol}|{account} can reuse open LongStraddle");
+            return;
+        }
+
         var best_option_chain = getBestOptionChain(container.Future);
         if (best_option_chain == null)
         {
@@ -157,6 +163,7 @@ public class TraderWorker
                 ExpirationDate = best_option_chain.ExpirationDate,
                 Strike = best_strike,
                 ContainerId = container.Id,
+                CreatedDate = DateTime.Now
             };
             await createNewStraddleAsync(straddle, container);
             return;
