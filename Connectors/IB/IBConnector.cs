@@ -365,6 +365,11 @@ public class IBConnector : DefaultEWrapper, IConnector
             openorder.Status = status;
             openorder.AvgFilledPrice = Convert.ToDecimal(avgFillPrice);
             openorder.FilledQuantity = (int)filled;
+
+            if (openorder.Status == "Submitted")
+            {
+                openorder.Submitted();
+            }
         }
     }
     public override void openOrder(int orderId, Contract contract, Order order, OrderState orderState)
@@ -379,10 +384,6 @@ public class IBConnector : DefaultEWrapper, IConnector
                     openorder.Commission = Convert.ToDecimal(orderState.Commission);
                     openorder.Filled();
                     OpenOrders.Remove(openorder);
-                }
-                if (openorder.Status == "Submited")
-                {
-                    openorder.Submitted();
                 }
             }
         }
@@ -478,7 +479,7 @@ public class IBConnector : DefaultEWrapper, IConnector
                 {
 
                     OpenOrders.Remove(orderwithwrongprice);
-                    orderwithwrongprice.Canceled();
+                    orderwithwrongprice.Canceled("Wrong price");
                     _logger.LogError($"{DateTime.Now} Order with {id} have wrong price. Cancel it");
                 }
                 break;
@@ -486,7 +487,7 @@ public class IBConnector : DefaultEWrapper, IConnector
                 if (OpenOrders.FirstOrDefault(o => o.OrderId == id) is IOrder order)
                 {
                     OpenOrders.Remove(order);
-                    order.Canceled();
+                    order.Canceled("Wrong quantity");
                 }
                 break;
             case 200:
@@ -509,7 +510,7 @@ public class IBConnector : DefaultEWrapper, IConnector
                 {
                     _logger.LogError($"Error: {id}, {errorCode}, {errorMsg}");
                     OpenOrders.Remove(canceledorder);
-                    canceledorder.Canceled();
+                    canceledorder.Canceled("Manual");
                 }
                 break;
             default:

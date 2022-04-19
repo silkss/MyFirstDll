@@ -31,6 +31,6 @@ public interface IOrder
     void SetOrderHolder(IOrderHolder orderHolder);
     void Filled();
     void Submitted();
-    void Canceled();
+    void Canceled(string reason);
     #endregion
 }

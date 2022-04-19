@@ -90,6 +90,10 @@ public class Container : IEntity
         }
         Future.Tick -= onInstrumentChanged;
     }
+    /// <summary>
+    /// вернет true если открытый стрэдл не набра необходимый ПиУ и время жизни не истекло.
+    /// </summary>
+    /// <returns></returns>
     public bool HasOpenStraddleWithPnl()
     {
         if (LongStraddles == null) return false;

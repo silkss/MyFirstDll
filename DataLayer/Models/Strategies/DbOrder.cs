@@ -41,8 +41,11 @@ public class DbOrder : IOrder, IEntity
     #region Methods
 
     #region PublicMethods
-    public void Canceled()
+    public string? CancelReason { get; set; }
+
+    public void Canceled(string reason)
     {
+        CancelReason = reason;
         if (_orderHolder != null)
         {
             _orderHolder.OnCanceled(OrderId);

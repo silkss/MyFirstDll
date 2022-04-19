@@ -204,6 +204,9 @@ namespace BlazorUi.Migrations
                     b.Property<decimal>("AvgFilledPrice")
                         .HasColumnType("decimal(18,10)");
 
+                    b.Property<string>("CancelReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Commission")
                         .HasColumnType("decimal(18,10)");
 

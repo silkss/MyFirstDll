@@ -161,13 +161,28 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     {
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
+        if (_orderRepository != null)
+        {
+            if (StrategyOrders.Contains(_openOrder))
+                _orderRepository.UpdateAsync(_openOrder).Wait();
+            else
+            {
+                _orderRepository.CreateAsync(_openOrder).Wait();
+                StrategyOrders.Add(_openOrder);
+            }
+        }
         _openOrder = null;
     }
     public void OnSubmit(int orderId)
     {
         if (_openOrder == null) return;
         if (_openOrder.OrderId != orderId) return;
-        //DO some staff
+        if (_orderRepository != null)
+        {
+            _orderRepository.CreateAsync(_openOrder).Wait();
+            if (!StrategyOrders.Contains(_openOrder))
+                StrategyOrders.Add(_openOrder);
+        }
     }
     public void onFilledQunatityChanged(int orderId)
     {

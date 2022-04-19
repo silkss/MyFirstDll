@@ -35,22 +35,8 @@ public class LongStraddle : IEntity
     public double Strike { get; set; }
     #region Straddle Logic
 
-    private StrategyLogic _straddleLogic;
     private IRepository<LongStraddle>? _straddleRepository;
-
-    public StrategyLogic StraddleLogic
-    {
-        get => _straddleLogic;
-        set
-        {
-            _straddleLogic = value;
-            OptionStrategies.ForEach(s => s.StrategyLogic = StraddleLogic);
-            if (_straddleRepository != null)
-            {
-                _straddleRepository.UpdateAsync(this);
-            }
-        }
-    }
+    public StrategyLogic StraddleLogic { get; private set; }
 
     [NotMapped]
     public decimal PnLInCurrency => StraddleLogic == StrategyLogic.ClosePostion ?
@@ -66,7 +52,15 @@ public class LongStraddle : IEntity
     #region Methods
 
     #region PublicMethods
-
+    public void ChangeLogic(StrategyLogic strategyLogic)
+    {
+        StraddleLogic = strategyLogic;
+        OptionStrategies.ForEach(s => s.StrategyLogic = StraddleLogic);
+        if (_straddleRepository != null)
+        {
+            _straddleRepository.UpdateAsync(this);
+        }
+    }
     public void Start(IConnector connector, IRepository<LongStraddle> straddleRepository, IRepository<OptionStrategy> repository, IRepository<DbOrder> orderRepository)
     {
         _straddleRepository = straddleRepository;

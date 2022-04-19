@@ -157,7 +157,7 @@ public class TraderWorker
         var straddle = container.HasStraddleInCollection(best_option_chain.ExpirationDate, best_strike);
         if (straddle == null)
         {
-            container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
+            container.LongStraddles.ForEach(ls => ls.ChangeLogic(StrategyLogic.ClosePostion));
             straddle = new LongStraddle
             {
                 ExpirationDate = best_option_chain.ExpirationDate,
@@ -172,11 +172,6 @@ public class TraderWorker
         {
             return;
         }
-        else if (straddle.StraddleLogic == StrategyLogic.ClosePostion)
-		{
-            container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
-            straddle.StraddleLogic = StrategyLogic.OpenPoition;
-		}
     }
 
     public void SignalOnClose(string symbol, double price, string account)
@@ -189,8 +184,12 @@ public class TraderWorker
             _logger.LogError($"No opened containers with symbol {symbol} and account {account}. Or this container dont have future");
             return;
         }
-
-        container.LongStraddles.ForEach(ls => ls.StraddleLogic = StrategyLogic.ClosePostion);
+        if (container.HasOpenStraddleWithPnl())
+        {
+            _logger.LogInformation($"{DateTime.Now} Container {symbol}|{account} can reuse open LongStraddle");
+            return;
+        }
+        container.LongStraddles.ForEach(ls => ls.ChangeLogic(StrategyLogic.ClosePostion));
     }
     #endregion
 
