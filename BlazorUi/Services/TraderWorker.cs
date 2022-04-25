@@ -20,7 +20,8 @@ public class TraderWorker
     private readonly StrategyRepository _strategyRepository;
     private readonly OrderRepository _orderRepository;
     private readonly List<Container> _workingContainers = new();
-    private TimeSpan _period = new(9, 0, 0, 0);
+    private TimeSpan _period = new(14, 0, 0, 0);
+    private TimeSpan _fridayPeriod = new(14, 0, 0, 0);
     #endregion
     
     #endregion
@@ -44,7 +45,9 @@ public class TraderWorker
         _workingContainers.FirstOrDefault(c => c.Future.LocalSymbol == symbol && c.Account == account);
     private OptionChain? getBestOptionChain(DbFuture future) => future.OptionChain
         .OrderBy(oc => oc.ExpirationDate)
-        .FirstOrDefault(opt_chain => opt_chain.ExpirationDate > (DateTime.Now + _period));
+        .FirstOrDefault(opt_chain => DateTime.Today.DayOfWeek == DayOfWeek.Friday ?
+            opt_chain.ExpirationDate > (DateTime.Now + _fridayPeriod) :
+            opt_chain.ExpirationDate > (DateTime.Now + _period));
     private double getBestStrike(OptionChain optionChain, double price) => optionChain.Strikes
         .OrderBy(s => s)
         .FirstOrDefault(s => s > price);
@@ -134,10 +137,21 @@ public class TraderWorker
             return;
         }
 
-        if (container.HasOpenStraddleWithPnl())
+        if (DateTime.Today.DayOfWeek != DayOfWeek.Friday)
         {
-            _logger.LogInformation($"{DateTime.Now} Container {symbol}|{account} can reuse open LongStraddle");
-            return;
+            if (container.HasOpenStraddleWithPnl())
+            {
+                _logger.LogInformation($"{DateTime.Now} Container {symbol}|{account} can reuse open LongStraddle");
+                return;
+            }
+        }
+        else
+        {
+            if (container.HasTodayOpenOrder())
+            {
+                _logger.LogInformation($"{DateTime.Now} Container {symbol}|{account} opened today. Can reuse.");
+                return;
+            }
         }
 
         var best_option_chain = getBestOptionChain(container.Future);

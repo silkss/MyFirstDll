@@ -111,6 +111,14 @@ public class Container : IEntity
         /* Во всех остальных случаях можно использовать существующий стрэддл! */
         return true;
     }
+    public bool HasTodayOpenOrder()
+    {
+        var open_straddle = LongStraddles.SingleOrDefault(ls => ls.StraddleLogic == StrategyLogic.OpenPoition);
+        if (open_straddle == null) return false;
+
+        if (DateTime.Today.Day == open_straddle.CreatedDate.Date.Day) return true;
+        return false;
+    }
     public LongStraddle? HasStraddleInCollection(DateTime expirationdate, double price) =>
         LongStraddles?.Find(ls => ls.ExpirationDate == expirationdate && ls.Strike == price);
     #endregion
