@@ -144,8 +144,15 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
 
         if (_orderRepository != null && _openOrder != null)
         {
-            _orderRepository.CreateAsync(_openOrder);
-            StrategyOrders.Add(_openOrder);
+            if (StrategyOrders.Contains(_openOrder))
+            {
+                _orderRepository.UpdateAsync(_openOrder).Wait();
+            }
+            else
+            {
+                _orderRepository.CreateAsync(_openOrder).Wait();
+                StrategyOrders.Add(_openOrder);
+            }
         }
 
         _openOrder = null;

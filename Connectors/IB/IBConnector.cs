@@ -116,7 +116,6 @@ public class IBConnector : DefaultEWrapper, IConnector
         nextOrderId = orderId;
     }
 
-
     #region Instruments
     private readonly List<IFuture> CachedFutures = new();
     private readonly List<IOption> CachedOptions = new();

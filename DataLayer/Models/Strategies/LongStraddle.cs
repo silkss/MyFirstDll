@@ -33,6 +33,7 @@ public class LongStraddle : IEntity
     public DateTime ExpirationDate { get; set; }
     public DateTime CreatedDate { get; set; }
     public double Strike { get; set; }
+
     #region Straddle Logic
 
     private IRepository<LongStraddle>? _straddleRepository;

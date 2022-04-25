@@ -46,7 +46,7 @@
                 <label for="keepAliveInDays">Keep alive in days</label>
                 <input type="text" class="form-control" id="keepAliveInDays" @bind="_keepAliveInDays">
             </div>
-            @if (_selectedFutureId > 0 && string.IsNullOrEmpty(_selectedAccount))
+            @if (_selectedFutureId > 0 && !string.IsNullOrEmpty(_selectedAccount))
             {
                 <button class="btn btn-primary" @onclick="CreateNewContainer">Submit</button>
             }
