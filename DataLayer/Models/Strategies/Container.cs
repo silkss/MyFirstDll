@@ -119,6 +119,9 @@ public class Container : IEntity
         if (DateTime.Today.Day == open_straddle.CreatedDate.Date.Day) return true;
         return false;
     }
+    public decimal GetAllPnl() => LongStraddles.Sum(l => l.PnLInCurrency);
+    public decimal GetOpenPnl() => LongStraddles.Sum(l => l.StraddleLogic == StrategyLogic.OpenPoition ? l.PnLInCurrency : 0);
+
     public LongStraddle? HasStraddleInCollection(DateTime expirationdate, double price) =>
         LongStraddles?.Find(ls => ls.ExpirationDate == expirationdate && ls.Strike == price);
     #endregion

@@ -14,7 +14,7 @@ public class IBConfig : IConnectorConfig
     {
         Ip = "127.0.0.1";
         Port = 7497;
-        ClientId = 12;
+        ClientId = 1;
         DataType = IbDataTypes.Delayed;
     }
 }

@@ -70,24 +70,24 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
     public decimal PnL => StrategyOrders
         .Sum(o => o.Direction == Direction.Buy ?
             -o.FilledQuantity * o.AvgFilledPrice :
-            o.FilledQuantity * o.AvgFilledPrice);
+            o.FilledQuantity * o.AvgFilledPrice) + (Option != null ? (Option.TheorPrice * Position) : 0);
 
     [NotMapped]
     public decimal Commission => StrategyOrders.Sum(o => o.Commission);
     [NotMapped]
     public decimal PnlInCurrency => Option == null ? 0m : PnL * Option.Multiplier;
-    [NotMapped]
-    public decimal UnrealizedPnlInCurrency
-    {
-        get
-        {
-            if (Option == null) return 0m;
-            if (Option.TheorPrice == 0) return 0m;
-            if (Position > 0) return (PnL + Option.TheorPrice) * Option.Multiplier;
-            if (Position < 0) return (PnL - Option.TheorPrice) * Option.Multiplier;
-            return 0m;
-        }
-    }
+    //[NotMapped]
+    //public decimal UnrealizedPnlInCurrency
+    //{
+    //    get
+    //    {
+    //        if (Option == null) return 0m;
+    //        if (Option.TheorPrice == 0) return 0m;
+    //        if (Position > 0) return (PnL + Option.TheorPrice) * Option.Multiplier;
+    //        if (Position < 0) return (PnL - Option.TheorPrice) * Option.Multiplier;
+    //        return 0m;
+    //    }
+    //}
     #endregion
 
 	#region _privateProps

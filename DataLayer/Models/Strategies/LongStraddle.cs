@@ -40,9 +40,8 @@ public class LongStraddle : IEntity
     public StrategyLogic StraddleLogic { get; private set; }
 
     [NotMapped]
-    public decimal PnLInCurrency => StraddleLogic == StrategyLogic.ClosePostion ?
-        OptionStrategies.Sum(os => os.PnlInCurrency) :
-        OptionStrategies.Sum(os => os.UnrealizedPnlInCurrency);
+    public decimal PnLInCurrency => OptionStrategies.Sum(os => os.PnlInCurrency);
+   
 
     #endregion
 
