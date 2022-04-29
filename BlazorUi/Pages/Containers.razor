@@ -63,8 +63,16 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Local symbol</th>
                     <th>Account</th>
+                    <th>Local symbol</th>
+                    @*<th>Open Straddle</th>*@
+                    <th>Open Pnl</th>
+                    <th>Total Pnl</th>
+                    <!-- 
+                        ДОбавить инфу по открытому стредлу.
+                        Добавить Пнл открытого
+                        Добавить Пнл контейнера.
+                    -->
                     <th></th>
                     <th></th>
                 </tr>
@@ -73,24 +81,25 @@
                 @foreach (var container in _containers)
                 {
                     <tr>
-                        <td>@container.Future?.LocalSymbol</td>
                         <td>@container.Account</td>
+                        <td>@container.Future?.LocalSymbol</td>
+                        @*<td>@container.GetOpenStraddle()</td>*@
+                        <td>@container.GetOpenPnl()</td>
+                        <td>@container.GetAllPnl()</td>
+                        <td>
                         @if (container.Started)
                         {
-                            <td><button class="btn btn-danger" @onclick="(()=> stopContainer(container))">Stop</button></td>
+                            <button class="btn btn-danger" @onclick="(()=> stopContainer(container))">Stop</button>
                         }
                         else
                         {
-                            <td><button class="btn btn-success" @onclick="(() => startContainer(container))">Start</button></td>
+                            <button class="btn btn-success" @onclick="(() => startContainer(container))">Start</button>
                         }
+                        </td>
                         <td>
                             <button class="btn btn-success" @onclick="(() => NavigateToContainerDetailsComponent(container.Id))">Details</button>
                         </td>
-                        <td>
-                            <button class="btn btn-danger">
-                                <span class="oi oi-trash"></span>
-                            </button>
-                        </td>
+
                     </tr>
                 }
             </tbody>

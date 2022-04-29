@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder
     .WebHost
     .ConfigureKestrel(options => options.Listen(System.Net.IPAddress.Parse("192.168.0.3"), 5000));
+    //.ConfigureKestrel(options => options.Listen(System.Net.IPAddress.Parse("127.0.0.1"), 5000));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
