@@ -108,8 +108,10 @@ public class OptionStrategy : BaseStrategy, IOrderHolder
         _repository = repository;
         _orderRepository = orderRepository;
 
-        if (Option != null)
-            connector.CacheOption(Option);
+        if (Option == null) return;
+
+        if (Option.LastTradeDate <= DateTime.Now) return;
+        connector.CacheOption(Option);
     }
     public void Work(string account)
     {

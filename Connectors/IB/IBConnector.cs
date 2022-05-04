@@ -490,6 +490,7 @@ public class IBConnector : DefaultEWrapper, IConnector
                 }
                 break;
             case 200:
+                _logger.LogCritical($"ReqId {id} - {errorMsg}");
                 ContractDetails? contractDetails = null;
                 lock(_futureLock)
                 {
